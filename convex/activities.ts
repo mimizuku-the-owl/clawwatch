@@ -52,7 +52,9 @@ export const recent = query({
     // Enrich with agent names
     const agentIds = [...new Set(activities.map((a) => a.agentId))];
     const agents = await Promise.all(agentIds.map((id) => ctx.db.get(id)));
-    const agentMap = new Map(agents.filter(Boolean).map((a) => [a!._id, a!.name]));
+    const agentMap = new Map(
+      agents.filter(Boolean).map((a) => [a!._id, a!.name]),
+    );
 
     return activities.map((activity) => ({
       ...activity,

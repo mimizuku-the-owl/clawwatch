@@ -9,14 +9,29 @@ interface CardProps {
   action?: ReactNode;
 }
 
-export function Card({ title, subtitle, children, className, action }: CardProps) {
+export function Card({
+  title,
+  subtitle,
+  children,
+  className,
+  action,
+}: CardProps) {
   return (
-    <div className={cn("rounded-xl border border-zinc-800 bg-zinc-900/50 p-6", className)}>
+    <div
+      className={cn(
+        "rounded-xl border border-zinc-800 bg-zinc-900/50 p-6",
+        className,
+      )}
+    >
       {(title || action) && (
         <div className="flex items-center justify-between mb-4">
           <div>
-            {title && <h3 className="text-sm font-semibold text-zinc-200">{title}</h3>}
-            {subtitle && <p className="text-xs text-zinc-500 mt-0.5">{subtitle}</p>}
+            {title && (
+              <h3 className="text-sm font-semibold text-zinc-200">{title}</h3>
+            )}
+            {subtitle && (
+              <p className="text-xs text-zinc-500 mt-0.5">{subtitle}</p>
+            )}
           </div>
           {action}
         </div>
@@ -34,12 +49,20 @@ interface StatCardProps {
   icon?: ReactNode;
 }
 
-export function StatCard({ label, value, change, changeType = "neutral", icon }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  change,
+  changeType = "neutral",
+  icon,
+}: StatCardProps) {
   return (
     <Card>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{label}</p>
+          <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+            {label}
+          </p>
           <p className="text-2xl font-bold text-zinc-100 mt-1">{value}</p>
           {change && (
             <p
@@ -47,7 +70,7 @@ export function StatCard({ label, value, change, changeType = "neutral", icon }:
                 "text-xs mt-1",
                 changeType === "positive" && "text-emerald-400",
                 changeType === "negative" && "text-red-400",
-                changeType === "neutral" && "text-zinc-500"
+                changeType === "neutral" && "text-zinc-500",
               )}
             >
               {change}

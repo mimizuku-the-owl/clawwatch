@@ -6,12 +6,7 @@ import { AlertBanner } from "@/components/AlertBanner";
 import { MiniActivityFeed } from "@/components/MiniActivityFeed";
 import { CostChart } from "@/components/CostChart";
 import { SnitchLeaderboard, SnitchScore } from "@/components/SnitchScore";
-import {
-  DollarSign,
-  Zap,
-  Activity,
-  AlertTriangle,
-} from "lucide-react";
+import { DollarSign, Zap, Activity, AlertTriangle } from "lucide-react";
 import { formatCost, formatTokens } from "@/lib/utils";
 
 export function Dashboard() {
@@ -34,22 +29,25 @@ export function Dashboard() {
       </div>
 
       {/* Alert banner */}
-      {unresolvedAlerts.length > 0 && (
-        <AlertBanner alerts={unresolvedAlerts} />
-      )}
+      {unresolvedAlerts.length > 0 && <AlertBanner alerts={unresolvedAlerts} />}
 
       {/* Stats row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Cost Today"
           value={formatCost(costSummary?.today.cost ?? 0)}
-          change={costSummary ? `${costSummary.today.requests} requests` : "Loading..."}
+          change={
+            costSummary
+              ? `${costSummary.today.requests} requests`
+              : "Loading..."
+          }
           icon={<DollarSign className="w-5 h-5 text-keel-400" />}
         />
         <StatCard
           label="Tokens (24h)"
           value={formatTokens(
-            (costSummary?.today.inputTokens ?? 0) + (costSummary?.today.outputTokens ?? 0)
+            (costSummary?.today.inputTokens ?? 0) +
+              (costSummary?.today.outputTokens ?? 0),
           )}
           change={`In: ${formatTokens(costSummary?.today.inputTokens ?? 0)} / Out: ${formatTokens(costSummary?.today.outputTokens ?? 0)}`}
           icon={<Zap className="w-5 h-5 text-amber-400" />}
@@ -57,8 +55,16 @@ export function Dashboard() {
         <StatCard
           label="Active Agents"
           value={`${agents?.filter((a) => a.status === "online").length ?? 0} / ${agents?.length ?? 0}`}
-          change={agents ? `${agents.filter((a) => a.status === "offline").length} offline` : "Loading..."}
-          changeType={agents?.some((a) => a.status === "offline") ? "negative" : "positive"}
+          change={
+            agents
+              ? `${agents.filter((a) => a.status === "offline").length} offline`
+              : "Loading..."
+          }
+          changeType={
+            agents?.some((a) => a.status === "offline")
+              ? "negative"
+              : "positive"
+          }
           icon={<Activity className="w-5 h-5 text-emerald-400" />}
         />
         <StatCard
@@ -113,7 +119,9 @@ export function Dashboard() {
             <Card className="col-span-full">
               <div className="text-center py-8 text-zinc-500">
                 <p className="text-lg font-medium">No agents connected</p>
-                <p className="text-sm mt-1">Connect your Clawdbot gateway to start monitoring</p>
+                <p className="text-sm mt-1">
+                  Connect your Clawdbot gateway to start monitoring
+                </p>
               </div>
             </Card>
           )}

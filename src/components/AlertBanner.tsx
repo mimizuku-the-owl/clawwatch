@@ -31,21 +31,23 @@ export function AlertBanner({ alerts }: Props) {
         "rounded-xl border p-4",
         criticalCount > 0
           ? "border-red-500/30 bg-red-500/5"
-          : "border-amber-500/30 bg-amber-500/5"
+          : "border-amber-500/30 bg-amber-500/5",
       )}
     >
       <div className="flex items-start gap-3">
         <AlertTriangle
           className={cn(
             "w-5 h-5 mt-0.5 shrink-0",
-            criticalCount > 0 ? "text-red-400" : "text-amber-400"
+            criticalCount > 0 ? "text-red-400" : "text-amber-400",
           )}
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-zinc-200">
             {alerts.length} unresolved alert{alerts.length > 1 ? "s" : ""}
             {criticalCount > 0 && (
-              <span className="text-red-400 ml-2">({criticalCount} critical)</span>
+              <span className="text-red-400 ml-2">
+                ({criticalCount} critical)
+              </span>
             )}
           </p>
           <div className="mt-2 space-y-1.5">
@@ -58,7 +60,7 @@ export function AlertBanner({ alerts }: Props) {
                   <span
                     className={cn(
                       "shrink-0 px-1.5 py-0.5 rounded text-xs font-medium",
-                      severityColor(alert.severity)
+                      severityColor(alert.severity),
                     )}
                   >
                     {alert.severity}

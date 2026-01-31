@@ -14,7 +14,12 @@ export const create = mutation({
   args: {
     agentId: v.optional(v.id("agents")),
     name: v.string(),
-    period: v.union(v.literal("hourly"), v.literal("daily"), v.literal("weekly"), v.literal("monthly")),
+    period: v.union(
+      v.literal("hourly"),
+      v.literal("daily"),
+      v.literal("weekly"),
+      v.literal("monthly"),
+    ),
     limitDollars: v.number(),
     hardStop: v.boolean(),
   },
@@ -64,14 +69,23 @@ export const addSpend = mutation({
         currentSpend: args.amount,
         resetAt: calculateNextReset(budget.period, now),
       });
-      return { exceeded: false, currentSpend: args.amount, limit: budget.limitDollars };
+      return {
+        exceeded: false,
+        currentSpend: args.amount,
+        limit: budget.limitDollars,
+      };
     }
 
     const newSpend = budget.currentSpend + args.amount;
     await ctx.db.patch(args.budgetId, { currentSpend: newSpend });
 
     const exceeded = newSpend >= budget.limitDollars;
-    return { exceeded, currentSpend: newSpend, limit: budget.limitDollars, hardStop: budget.hardStop };
+    return {
+      exceeded,
+      currentSpend: newSpend,
+      limit: budget.limitDollars,
+      hardStop: budget.hardStop,
+    };
   },
 });
 

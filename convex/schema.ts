@@ -6,13 +6,19 @@ export default defineSchema({
   agents: defineTable({
     name: v.string(),
     gatewayUrl: v.string(),
-    status: v.union(v.literal("online"), v.literal("offline"), v.literal("degraded")),
+    status: v.union(
+      v.literal("online"),
+      v.literal("offline"),
+      v.literal("degraded"),
+    ),
     lastHeartbeat: v.number(),
     lastSeen: v.number(),
-    config: v.optional(v.object({
-      model: v.optional(v.string()),
-      channel: v.optional(v.string()),
-    })),
+    config: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        channel: v.optional(v.string()),
+      }),
+    ),
   }).index("by_status", ["status"]),
 
   // Session tracking
@@ -55,7 +61,12 @@ export default defineSchema({
   budgets: defineTable({
     agentId: v.optional(v.id("agents")), // null = global budget
     name: v.string(),
-    period: v.union(v.literal("hourly"), v.literal("daily"), v.literal("weekly"), v.literal("monthly")),
+    period: v.union(
+      v.literal("hourly"),
+      v.literal("daily"),
+      v.literal("weekly"),
+      v.literal("monthly"),
+    ),
     limitDollars: v.number(),
     currentSpend: v.number(),
     resetAt: v.number(),
@@ -78,14 +89,14 @@ export default defineSchema({
     config: v.object({
       threshold: v.optional(v.number()),
       windowMinutes: v.optional(v.number()),
-      comparison: v.optional(v.union(v.literal("gt"), v.literal("lt"), v.literal("eq"))),
+      comparison: v.optional(
+        v.union(v.literal("gt"), v.literal("lt"), v.literal("eq")),
+      ),
       metric: v.optional(v.string()),
     }),
-    channels: v.array(v.union(
-      v.literal("discord"),
-      v.literal("email"),
-      v.literal("webhook"),
-    )),
+    channels: v.array(
+      v.union(v.literal("discord"), v.literal("email"), v.literal("webhook")),
+    ),
     isActive: v.boolean(),
     cooldownMinutes: v.number(), // don't re-alert within this window
     lastTriggered: v.optional(v.number()),
@@ -96,7 +107,11 @@ export default defineSchema({
     ruleId: v.id("alertRules"),
     agentId: v.optional(v.id("agents")),
     type: v.string(),
-    severity: v.union(v.literal("info"), v.literal("warning"), v.literal("critical")),
+    severity: v.union(
+      v.literal("info"),
+      v.literal("warning"),
+      v.literal("critical"),
+    ),
     title: v.string(),
     message: v.string(),
     data: v.optional(v.any()),
@@ -150,13 +165,21 @@ export default defineSchema({
       v.literal("tattled_on_user"),
     ),
     description: v.string(),
-    severity: v.union(v.literal("snitch"), v.literal("hall_monitor"), v.literal("narc")),
+    severity: v.union(
+      v.literal("snitch"),
+      v.literal("hall_monitor"),
+      v.literal("narc"),
+    ),
     timestamp: v.number(),
   }).index("by_agent", ["agentId"]),
 
   // Notification channels config
   notificationChannels: defineTable({
-    type: v.union(v.literal("discord"), v.literal("email"), v.literal("webhook")),
+    type: v.union(
+      v.literal("discord"),
+      v.literal("email"),
+      v.literal("webhook"),
+    ),
     name: v.string(),
     config: v.object({
       webhookUrl: v.optional(v.string()),

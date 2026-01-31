@@ -3,7 +3,16 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Card } from "./Card";
 import { cn, timeAgo } from "@/lib/utils";
-import { Eye, ShieldAlert, AlertTriangle, DollarSign, HelpCircle, Megaphone, FileText, UserX } from "lucide-react";
+import {
+  Eye,
+  ShieldAlert,
+  AlertTriangle,
+  DollarSign,
+  HelpCircle,
+  Megaphone,
+  FileText,
+  UserX,
+} from "lucide-react";
 
 const TYPE_ICONS: Record<string, typeof Eye> = {
   alert_fired: AlertTriangle,
@@ -70,12 +79,16 @@ export function SnitchScore({ agentId }: Props) {
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <span className={cn("text-3xl font-bold tabular-nums", scoreColor)}>
+              <span
+                className={cn("text-3xl font-bold tabular-nums", scoreColor)}
+              >
                 {score.score}
               </span>
               <span className="text-sm text-zinc-500">/ 100</span>
             </div>
-            <p className={cn("text-sm font-medium", scoreColor)}>{score.label}</p>
+            <p className={cn("text-sm font-medium", scoreColor)}>
+              {score.label}
+            </p>
           </div>
         </div>
 
@@ -90,20 +103,27 @@ export function SnitchScore({ agentId }: Props) {
         {/* Breakdown */}
         {Object.keys(score.breakdown).length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Breakdown</p>
+            <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">
+              Breakdown
+            </p>
             {Object.entries(score.breakdown)
               .sort(([, a], [, b]) => (b as number) - (a as number))
               .map(([type, count]) => {
                 const Icon = TYPE_ICONS[type] ?? Eye;
                 return (
-                  <div key={type} className="flex items-center justify-between text-sm">
+                  <div
+                    key={type}
+                    className="flex items-center justify-between text-sm"
+                  >
                     <div className="flex items-center gap-2">
                       <Icon className="w-3.5 h-3.5 text-zinc-500" />
                       <span className="text-zinc-400">
                         {TYPE_LABELS[type] ?? type}
                       </span>
                     </div>
-                    <span className="text-zinc-300 font-mono text-xs">{count as number}</span>
+                    <span className="text-zinc-300 font-mono text-xs">
+                      {count as number}
+                    </span>
                   </div>
                 );
               })}
@@ -117,17 +137,28 @@ export function SnitchScore({ agentId }: Props) {
               Recent Snitching
             </p>
             {score.recentSnitches.map((snitch, i) => (
-              <div key={i} className="text-xs text-zinc-500 flex items-center gap-2">
-                <span className={cn(
-                  "px-1.5 py-0.5 rounded",
-                  snitch.severity === "narc" ? "bg-red-500/10 text-red-400" :
-                  snitch.severity === "hall_monitor" ? "bg-amber-500/10 text-amber-400" :
-                  "bg-blue-500/10 text-blue-400"
-                )}>
+              <div
+                key={i}
+                className="text-xs text-zinc-500 flex items-center gap-2"
+              >
+                <span
+                  className={cn(
+                    "px-1.5 py-0.5 rounded",
+                    snitch.severity === "narc"
+                      ? "bg-red-500/10 text-red-400"
+                      : snitch.severity === "hall_monitor"
+                        ? "bg-amber-500/10 text-amber-400"
+                        : "bg-blue-500/10 text-blue-400",
+                  )}
+                >
                   {snitch.severity}
                 </span>
-                <span className="text-zinc-400 truncate">{snitch.description}</span>
-                <span className="text-zinc-700 shrink-0">{timeAgo(snitch.timestamp)}</span>
+                <span className="text-zinc-400 truncate">
+                  {snitch.description}
+                </span>
+                <span className="text-zinc-700 shrink-0">
+                  {timeAgo(snitch.timestamp)}
+                </span>
               </div>
             ))}
           </div>
@@ -135,7 +166,8 @@ export function SnitchScore({ agentId }: Props) {
 
         {score.totalEvents === 0 && (
           <p className="text-center text-zinc-600 text-sm py-2">
-            No snitching recorded yet. Your agent is keeping quiet... for now. 🤫
+            No snitching recorded yet. Your agent is keeping quiet... for now.
+            🤫
           </p>
         )}
       </div>
@@ -163,17 +195,26 @@ export function SnitchLeaderboard() {
               <span className="text-lg w-6 text-center">
                 {i < 3 ? medals[i] : `${i + 1}.`}
               </span>
-              <span className="text-sm font-medium text-zinc-200">{entry.agentName}</span>
+              <span className="text-sm font-medium text-zinc-200">
+                {entry.agentName}
+              </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-zinc-500">{entry.totalSnitches} events</span>
-              <span className={cn(
-                "text-sm font-bold tabular-nums",
-                entry.score < 25 ? "text-emerald-400" :
-                entry.score < 50 ? "text-blue-400" :
-                entry.score < 75 ? "text-amber-400" :
-                "text-red-400"
-              )}>
+              <span className="text-xs text-zinc-500">
+                {entry.totalSnitches} events
+              </span>
+              <span
+                className={cn(
+                  "text-sm font-bold tabular-nums",
+                  entry.score < 25
+                    ? "text-emerald-400"
+                    : entry.score < 50
+                      ? "text-blue-400"
+                      : entry.score < 75
+                        ? "text-amber-400"
+                        : "text-red-400",
+                )}
+              >
                 {entry.score}
               </span>
             </div>

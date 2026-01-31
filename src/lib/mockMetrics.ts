@@ -42,7 +42,12 @@ export function generateLatencyMetrics(hours: number = 24): LatencyMetrics {
 
     p50.push({ timestamp, value: Math.round(jitter(baseLatency, 50)) });
     p95.push({ timestamp, value: Math.round(jitter(baseLatency * 2.5, 200)) });
-    p99.push({ timestamp, value: Math.round(jitter(baseLatency * 4, 500) + spike(i, spikePoints, 2000)) });
+    p99.push({
+      timestamp,
+      value: Math.round(
+        jitter(baseLatency * 4, 500) + spike(i, spikePoints, 2000),
+      ),
+    });
   }
 
   return { p50, p95, p99 };
@@ -106,7 +111,10 @@ export function generateSessionCount(hours: number = 24): MetricPoint[] {
   for (let i = 0; i < points; i++) {
     const timestamp = now - (points - i) * 15 * 60 * 1000;
     const hour = new Date(timestamp).getHours();
-    const active = hour >= 8 && hour <= 23 ? Math.round(jitter(4, 2)) : Math.round(jitter(1, 0.5));
+    const active =
+      hour >= 8 && hour <= 23
+        ? Math.round(jitter(4, 2))
+        : Math.round(jitter(1, 0.5));
     data.push({ timestamp, value: Math.max(0, active) });
   }
 

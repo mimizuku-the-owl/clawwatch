@@ -18,7 +18,13 @@ const NAV_ITEMS = [
   { id: "settings" as const, label: "Settings", icon: Settings },
 ];
 
-type Page = "dashboard" | "metrics" | "costs" | "alerts" | "activity" | "settings";
+type Page =
+  | "dashboard"
+  | "metrics"
+  | "costs"
+  | "alerts"
+  | "activity"
+  | "settings";
 
 interface SidebarProps {
   currentPage: Page;
@@ -49,7 +55,7 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors mb-1",
               currentPage === item.id
                 ? "bg-keel-500/10 text-keel-400"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50",
             )}
           >
             <item.icon className="w-4.5 h-4.5" />

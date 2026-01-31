@@ -12,7 +12,11 @@ export const list = query({
 // Create a notification channel
 export const create = mutation({
   args: {
-    type: v.union(v.literal("discord"), v.literal("email"), v.literal("webhook")),
+    type: v.union(
+      v.literal("discord"),
+      v.literal("email"),
+      v.literal("webhook"),
+    ),
     name: v.string(),
     config: v.object({
       webhookUrl: v.optional(v.string()),
@@ -33,11 +37,13 @@ export const update = mutation({
   args: {
     id: v.id("notificationChannels"),
     name: v.optional(v.string()),
-    config: v.optional(v.object({
-      webhookUrl: v.optional(v.string()),
-      email: v.optional(v.string()),
-      channelId: v.optional(v.string()),
-    })),
+    config: v.optional(
+      v.object({
+        webhookUrl: v.optional(v.string()),
+        email: v.optional(v.string()),
+        channelId: v.optional(v.string()),
+      }),
+    ),
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {

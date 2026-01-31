@@ -2,7 +2,17 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card } from "@/components/Card";
 import { cn, severityColor, timeAgo } from "@/lib/utils";
-import { Bell, CheckCircle, X, Plus, Shield, DollarSign, Wifi, RefreshCw, AlertTriangle } from "lucide-react";
+import {
+  Bell,
+  CheckCircle,
+  X,
+  Plus,
+  Shield,
+  DollarSign,
+  Wifi,
+  RefreshCw,
+  AlertTriangle,
+} from "lucide-react";
 
 const TYPE_ICONS: Record<string, typeof Bell> = {
   budget_exceeded: DollarSign,
@@ -43,17 +53,19 @@ export function AlertsPage() {
                     "flex items-center justify-between p-3 rounded-lg border",
                     rule.isActive
                       ? "border-zinc-800 bg-zinc-800/30"
-                      : "border-zinc-800/50 bg-zinc-900/30 opacity-50"
+                      : "border-zinc-800/50 bg-zinc-900/30 opacity-50",
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <Icon className="w-4 h-4 text-zinc-400" />
                     <div>
-                      <p className="text-sm font-medium text-zinc-200">{rule.name}</p>
+                      <p className="text-sm font-medium text-zinc-200">
+                        {rule.name}
+                      </p>
                       <p className="text-xs text-zinc-500">
                         {rule.type.replace(/_/g, " ")} ·{" "}
-                        {rule.channels.join(", ")} ·{" "}
-                        {rule.cooldownMinutes}min cooldown
+                        {rule.channels.join(", ")} · {rule.cooldownMinutes}min
+                        cooldown
                       </p>
                     </div>
                   </div>
@@ -68,7 +80,7 @@ export function AlertsPage() {
                         "text-xs px-2 py-0.5 rounded-full",
                         rule.isActive
                           ? "bg-emerald-500/10 text-emerald-400"
-                          : "bg-zinc-700/50 text-zinc-500"
+                          : "bg-zinc-700/50 text-zinc-500",
                       )}
                     >
                       {rule.isActive ? "Active" : "Paused"}
@@ -98,21 +110,25 @@ export function AlertsPage() {
                   "flex items-start justify-between p-3 rounded-lg border",
                   alert.resolvedAt
                     ? "border-zinc-800/50 bg-zinc-900/30 opacity-60"
-                    : "border-zinc-800 bg-zinc-800/30"
+                    : "border-zinc-800 bg-zinc-800/30",
                 )}
               >
                 <div className="flex items-start gap-3">
                   <span
                     className={cn(
                       "shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-xs font-medium",
-                      severityColor(alert.severity)
+                      severityColor(alert.severity),
                     )}
                   >
                     {alert.severity}
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-zinc-200">{alert.title}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{alert.message}</p>
+                    <p className="text-sm font-medium text-zinc-200">
+                      {alert.title}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {alert.message}
+                    </p>
                     <p className="text-xs text-zinc-700 mt-1">
                       {timeAgo(alert._creationTime)}
                       {alert.acknowledgedAt && " · Acknowledged"}

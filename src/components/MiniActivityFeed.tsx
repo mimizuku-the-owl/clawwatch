@@ -71,10 +71,14 @@ export function MiniActivityFeed({ activities }: Props) {
               </p>
               <div className="flex items-center gap-2 mt-0.5">
                 {activity.agentName && (
-                  <span className="text-xs text-zinc-600">{activity.agentName}</span>
+                  <span className="text-xs text-zinc-600">
+                    {activity.agentName}
+                  </span>
                 )}
                 {activity.channel && (
-                  <span className="text-xs text-zinc-700">#{activity.channel}</span>
+                  <span className="text-xs text-zinc-700">
+                    #{activity.channel}
+                  </span>
                 )}
                 <span className="text-xs text-zinc-700">
                   {timeAgo(activity._creationTime)}

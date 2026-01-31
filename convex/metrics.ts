@@ -15,7 +15,7 @@ export const healthTimeSeries = query({
       checks = await ctx.db
         .query("healthChecks")
         .withIndex("by_agent_time", (q) =>
-          q.eq("agentId", args.agentId!).gte("timestamp", startTime)
+          q.eq("agentId", args.agentId!).gte("timestamp", startTime),
         )
         .collect();
     } else {
@@ -26,7 +26,7 @@ export const healthTimeSeries = query({
         const agentChecks = await ctx.db
           .query("healthChecks")
           .withIndex("by_agent_time", (q) =>
-            q.eq("agentId", agent._id).gte("timestamp", startTime)
+            q.eq("agentId", agent._id).gte("timestamp", startTime),
           )
           .collect();
         checks.push(...agentChecks);
@@ -61,14 +61,14 @@ export const costTimeSeries = query({
       records = await ctx.db
         .query("costRecords")
         .withIndex("by_agent_time", (q) =>
-          q.eq("agentId", args.agentId!).gte("timestamp", startTime)
+          q.eq("agentId", args.agentId!).gte("timestamp", startTime),
         )
         .collect();
     } else {
       records = await ctx.db
         .query("costRecords")
         .withIndex("by_period", (q) =>
-          q.eq("period", "hourly").gte("timestamp", startTime)
+          q.eq("period", "hourly").gte("timestamp", startTime),
         )
         .collect();
     }
@@ -109,15 +109,24 @@ export const activityTimeSeries = query({
 
     // Bucket into 15-min windows
     const bucketMs = 15 * 60 * 1000;
-    const buckets = new Map<number, { total: number; errors: number; toolCalls: number; messages: number }>();
+    const buckets = new Map<
+      number,
+      { total: number; errors: number; toolCalls: number; messages: number }
+    >();
 
     for (const a of activities) {
       const key = Math.floor(a._creationTime / bucketMs) * bucketMs;
-      const bucket = buckets.get(key) ?? { total: 0, errors: 0, toolCalls: 0, messages: 0 };
+      const bucket = buckets.get(key) ?? {
+        total: 0,
+        errors: 0,
+        toolCalls: 0,
+        messages: 0,
+      };
       bucket.total++;
       if (a.type === "error") bucket.errors++;
       if (a.type === "tool_call") bucket.toolCalls++;
-      if (a.type === "message_sent" || a.type === "message_received") bucket.messages++;
+      if (a.type === "message_sent" || a.type === "message_received")
+        bucket.messages++;
       buckets.set(key, bucket);
     }
 

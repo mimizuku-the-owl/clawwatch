@@ -16,7 +16,7 @@ const TIME_RANGES: { value: TimeRange; label: string; hours: number }[] = [
 
 function bucketPoints(
   raw: { timestamp: number; value: number }[],
-  bucketMs: number
+  bucketMs: number,
 ): MetricPoint[] {
   const buckets = new Map<number, number[]>();
   for (const p of raw) {
@@ -42,7 +42,7 @@ function percentile(values: number[], p: number): number {
 
 function bucketPercentiles(
   raw: { timestamp: number; value: number }[],
-  bucketMs: number
+  bucketMs: number,
 ): { p50: MetricPoint[]; p95: MetricPoint[]; p99: MetricPoint[] } {
   const buckets = new Map<number, number[]>();
   for (const p of raw) {
@@ -53,23 +53,45 @@ function bucketPercentiles(
   }
   const keys = Array.from(buckets.keys()).sort((a, b) => a - b);
   return {
-    p50: keys.map((k) => ({ timestamp: k, value: Math.round(percentile(buckets.get(k)!, 50)) })),
-    p95: keys.map((k) => ({ timestamp: k, value: Math.round(percentile(buckets.get(k)!, 95)) })),
-    p99: keys.map((k) => ({ timestamp: k, value: Math.round(percentile(buckets.get(k)!, 99)) })),
+    p50: keys.map((k) => ({
+      timestamp: k,
+      value: Math.round(percentile(buckets.get(k)!, 50)),
+    })),
+    p95: keys.map((k) => ({
+      timestamp: k,
+      value: Math.round(percentile(buckets.get(k)!, 95)),
+    })),
+    p99: keys.map((k) => ({
+      timestamp: k,
+      value: Math.round(percentile(buckets.get(k)!, 99)),
+    })),
   };
 }
 
 export function MetricsPage() {
   const [range, setRange] = useState<TimeRange>("24h");
   const hours = TIME_RANGES.find((r) => r.value === range)?.hours ?? 24;
-  const bucketMs = hours <= 1 ? 60000 : hours <= 6 ? 5 * 60000 : hours <= 24 ? 15 * 60000 : 60 * 60000;
+  const bucketMs =
+    hours <= 1
+      ? 60000
+      : hours <= 6
+        ? 5 * 60000
+        : hours <= 24
+          ? 15 * 60000
+          : 60 * 60000;
 
   const healthData = useQuery(api.metrics.healthTimeSeries, { hours });
   const costData = useQuery(api.metrics.costTimeSeries, { hours });
   const activityData = useQuery(api.metrics.activityTimeSeries, { hours });
 
-  const isLoading = healthData === undefined || costData === undefined || activityData === undefined;
-  const hasData = (healthData?.length ?? 0) > 0 || (costData?.length ?? 0) > 0 || (activityData?.length ?? 0) > 0;
+  const isLoading =
+    healthData === undefined ||
+    costData === undefined ||
+    activityData === undefined;
+  const hasData =
+    (healthData?.length ?? 0) > 0 ||
+    (costData?.length ?? 0) > 0 ||
+    (activityData?.length ?? 0) > 0;
 
   // Build chart data from real metrics
   const latency = useMemo(() => {
@@ -164,7 +186,8 @@ export function MetricsPage() {
         <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg px-4 py-2.5 flex items-center gap-2">
           <span className="text-amber-400 text-sm">📊</span>
           <span className="text-xs text-amber-400/80">
-            No metrics data yet — the collector is running and will populate this as data flows in
+            No metrics data yet — the collector is running and will populate
+            this as data flows in
           </span>
         </div>
       )}
@@ -172,7 +195,9 @@ export function MetricsPage() {
         <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-4 py-2.5 flex items-center gap-2">
           <span className="text-emerald-400 text-sm">✓</span>
           <span className="text-xs text-emerald-400/80">
-            Live metrics from gateway — {healthData?.length ?? 0} health checks, {costData?.length ?? 0} cost records, {activityData?.length ?? 0} activity windows
+            Live metrics from gateway — {healthData?.length ?? 0} health checks,{" "}
+            {costData?.length ?? 0} cost records, {activityData?.length ?? 0}{" "}
+            activity windows
           </span>
         </div>
       )}
@@ -184,7 +209,7 @@ export function MetricsPage() {
           title="Response Latency"
           subtitle="Gateway response time percentiles"
           data={latency.p50}
-          color="#14b8a6"
+          color="#a855f7"
           unit="ms"
           multiLine={[
             { label: "P95", data: latency.p95, color: "#f59e0b" },
@@ -270,12 +295,14 @@ export function MetricsPage() {
             {
               name: "Token Budget",
               metric: "Tokens > 40K per window",
-              status: (tokenThroughput.at(-1)?.value ?? 0) > 40000 ? "ALARM" : "OK",
+              status:
+                (tokenThroughput.at(-1)?.value ?? 0) > 40000 ? "ALARM" : "OK",
             },
             {
               name: "Heartbeat",
               metric: "Interval > 2000ms",
-              status: (heartbeatLatency.at(-1)?.value ?? 0) > 2000 ? "ALARM" : "OK",
+              status:
+                (heartbeatLatency.at(-1)?.value ?? 0) > 2000 ? "ALARM" : "OK",
             },
             {
               name: "Agent Offline",
@@ -297,7 +324,9 @@ export function MetricsPage() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-zinc-200">{alarm.name}</span>
+                <span className="text-sm font-medium text-zinc-200">
+                  {alarm.name}
+                </span>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                     alarm.status === "ALARM"

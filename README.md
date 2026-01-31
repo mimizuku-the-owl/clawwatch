@@ -7,7 +7,7 @@ ClawWatch is the operational backbone for your AI agents — monitor performance
 Built for the [Clawdbot](https://github.com/clawdbot/clawdbot) and OpenClaw ecosystem but designed to work with any AI agent platform.
 
 ![ClawWatch Dashboard](./screenshot.png)
-*Screenshot placeholder - ClawWatch monitoring dashboard*
+_Screenshot placeholder - ClawWatch monitoring dashboard_
 
 ---
 
@@ -60,6 +60,7 @@ npx convex dev --once --url http://127.0.0.1:3210 --admin-key <your-admin-key>
 ### 5. Open Dashboard
 
 Visit in your browser:
+
 - **🔍 ClawWatch Dashboard**: http://localhost:5173
 - **⚙️ Convex Admin** (optional): http://localhost:6791
 
@@ -90,6 +91,7 @@ See `.env.example` for all available options.
 ### Gateway Connection
 
 ClawWatch connects to your Clawdbot gateway to:
+
 - Monitor agent status and health
 - Track real-time cost and token usage
 - Collect activity logs and session transcripts
@@ -102,21 +104,27 @@ Ensure your gateway is running and accessible at the configured URL.
 ## Features
 
 ### 📊 Dashboard
+
 Get an overview of all your agents at a glance:
+
 - **Agent Status**: Online/offline, active sessions, health metrics
 - **Cost Summary**: Today's spend, token usage, request counts
 - **Active Alerts**: Critical issues requiring attention
 - **Recent Activity**: What your agents have been doing
 
 ### 💰 Cost Explorer
+
 Track spending across all your agents:
+
 - **Real-time Tracking**: Token and dollar costs per agent, session, and time period
 - **Historical Data**: Hourly, daily, weekly, and monthly breakdowns
 - **Budget Management**: Set spending limits with hard stops or alerts
 - **Provider Breakdown**: Costs by AI provider (OpenAI, Anthropic, etc.)
 
 ### 📈 Metrics
+
 CloudWatch-style monitoring for your agents:
+
 - **Response Latency**: P50, P95, P99 percentiles with configurable alarms
 - **Request Rate**: Invocations per time window
 - **Error Rate**: Failed requests and exceptions
@@ -125,21 +133,27 @@ CloudWatch-style monitoring for your agents:
 - **Heartbeat Monitoring**: Agent connectivity and health
 
 ### 🚨 Alerts
+
 Configurable monitoring and alerting:
+
 - **Cost Thresholds**: Alert when agents exceed spending limits
 - **Performance Issues**: High latency, error spikes, session loops
 - **Agent Health**: Offline detection, heartbeat failures
 - **Custom Metrics**: Define your own monitoring rules
 
 ### 📜 Activity Feed
+
 "What did my agent do?" timeline:
+
 - **Action History**: Tool calls, messages, decisions
-- **Session Tracking**: Follow agent conversations and workflows  
+- **Session Tracking**: Follow agent conversations and workflows
 - **Error Logging**: Exceptions and failure details
 - **Performance Insights**: Response times and resource usage
 
 ### 🎯 Snitch Score™
+
 A fun metric tracking how often your agents "tattle" or report issues:
+
 - **Behavioral Tracking**: Safety refusals, permission requests, compliance reports
 - **Leaderboards**: Which agent is the biggest tattletale?
 - **Trend Analysis**: Changes in agent behavior over time
@@ -272,4 +286,4 @@ MIT License - see [LICENSE](./LICENSE) for details.
 
 ---
 
-*Built with ❤️ for the AI agent community*
+_Built with ❤️ for the AI agent community_

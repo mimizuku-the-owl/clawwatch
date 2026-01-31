@@ -31,8 +31,18 @@ export const seedDemo = mutation({
 
     // Seed cost records (simulated last 24 hours)
     const models = [
-      { provider: "anthropic", model: "claude-opus-4-5", inputCostPer1k: 0.015, outputCostPer1k: 0.075 },
-      { provider: "anthropic", model: "claude-sonnet-4-20250514", inputCostPer1k: 0.003, outputCostPer1k: 0.015 },
+      {
+        provider: "anthropic",
+        model: "claude-opus-4-5",
+        inputCostPer1k: 0.015,
+        outputCostPer1k: 0.075,
+      },
+      {
+        provider: "anthropic",
+        model: "claude-sonnet-4-20250514",
+        inputCostPer1k: 0.003,
+        outputCostPer1k: 0.015,
+      },
     ];
 
     for (let h = 23; h >= 0; h--) {
@@ -41,7 +51,9 @@ export const seedDemo = mutation({
       const agentId = h % 3 === 0 ? vanillaId : mimizukuId;
       const inputTokens = Math.floor(5000 + Math.random() * 20000);
       const outputTokens = Math.floor(1000 + Math.random() * 5000);
-      const cost = (inputTokens / 1000) * m.inputCostPer1k + (outputTokens / 1000) * m.outputCostPer1k;
+      const cost =
+        (inputTokens / 1000) * m.inputCostPer1k +
+        (outputTokens / 1000) * m.outputCostPer1k;
 
       await ctx.db.insert("costRecords", {
         agentId,
@@ -57,14 +69,35 @@ export const seedDemo = mutation({
 
     // Seed activities
     const activityTypes = [
-      { type: "message_received" as const, summary: "Received message from Dave in #mimizuku" },
-      { type: "tool_call" as const, summary: "Called web_search: 'Convex self-hosting guide'" },
-      { type: "message_sent" as const, summary: "Sent reply in #mimizuku (342 tokens)" },
-      { type: "heartbeat" as const, summary: "Heartbeat OK — all systems nominal" },
-      { type: "session_started" as const, summary: "New session: discord:channel:1466206335329894494" },
+      {
+        type: "message_received" as const,
+        summary: "Received message from Dave in #mimizuku",
+      },
+      {
+        type: "tool_call" as const,
+        summary: "Called web_search: 'Convex self-hosting guide'",
+      },
+      {
+        type: "message_sent" as const,
+        summary: "Sent reply in #mimizuku (342 tokens)",
+      },
+      {
+        type: "heartbeat" as const,
+        summary: "Heartbeat OK — all systems nominal",
+      },
+      {
+        type: "session_started" as const,
+        summary: "New session: discord:channel:1466206335329894494",
+      },
       { type: "tool_call" as const, summary: "Called exec: 'git status'" },
-      { type: "message_sent" as const, summary: "Sent message to #the-parlament" },
-      { type: "error" as const, summary: "Rate limit hit on Anthropic API (429)" },
+      {
+        type: "message_sent" as const,
+        summary: "Sent message to #the-parlament",
+      },
+      {
+        type: "error" as const,
+        summary: "Rate limit hit on Anthropic API (429)",
+      },
     ];
 
     for (let i = 0; i < 15; i++) {
@@ -133,11 +166,31 @@ export const seedDemo = mutation({
 
     // Seed snitch events
     const snitchTypes = [
-      { type: "alert_fired" as const, desc: "Fired cost alert: daily spend hit $8.50", sev: "snitch" as const },
-      { type: "permission_ask" as const, desc: "Asked Dave before sending email to external contact", sev: "snitch" as const },
-      { type: "budget_warning" as const, desc: "Warned about hourly token burn rate", sev: "hall_monitor" as const },
-      { type: "proactive_warning" as const, desc: "Notified Dave that API key expires in 48h", sev: "snitch" as const },
-      { type: "safety_refusal" as const, desc: "Refused to share private credentials in group chat", sev: "hall_monitor" as const },
+      {
+        type: "alert_fired" as const,
+        desc: "Fired cost alert: daily spend hit $8.50",
+        sev: "snitch" as const,
+      },
+      {
+        type: "permission_ask" as const,
+        desc: "Asked Dave before sending email to external contact",
+        sev: "snitch" as const,
+      },
+      {
+        type: "budget_warning" as const,
+        desc: "Warned about hourly token burn rate",
+        sev: "hall_monitor" as const,
+      },
+      {
+        type: "proactive_warning" as const,
+        desc: "Notified Dave that API key expires in 48h",
+        sev: "snitch" as const,
+      },
+      {
+        type: "safety_refusal" as const,
+        desc: "Refused to share private credentials in group chat",
+        sev: "hall_monitor" as const,
+      },
     ];
 
     for (let i = 0; i < snitchTypes.length; i++) {
@@ -147,7 +200,7 @@ export const seedDemo = mutation({
         type: s.type,
         description: s.desc,
         severity: s.sev,
-        timestamp: now - (i * 3600000),
+        timestamp: now - i * 3600000,
       });
     }
 

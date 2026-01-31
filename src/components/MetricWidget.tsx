@@ -40,14 +40,17 @@ interface MetricWidgetProps {
 }
 
 function formatTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return new Date(ts).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function MetricWidget({
   title,
   subtitle,
   data,
-  color = "#14b8a6",
+  color = "#a855f7",
   fillColor,
   unit = "",
   chartType = "area",
@@ -98,30 +101,47 @@ export function MetricWidget({
       <div className="flex items-center gap-6 mb-3">
         <div>
           <p className="text-xs text-zinc-500">Current</p>
-          <p className={cn("text-lg font-bold tabular-nums", isAlarming ? "text-red-400" : "text-zinc-100")}>
-            {typeof current === "number" ? current.toLocaleString() : current}{unit}
+          <p
+            className={cn(
+              "text-lg font-bold tabular-nums",
+              isAlarming ? "text-red-400" : "text-zinc-100",
+            )}
+          >
+            {typeof current === "number" ? current.toLocaleString() : current}
+            {unit}
           </p>
         </div>
         <div>
           <p className="text-xs text-zinc-500">Avg</p>
-          <p className="text-sm font-medium text-zinc-300 tabular-nums">{Math.round(avg).toLocaleString()}{unit}</p>
+          <p className="text-sm font-medium text-zinc-300 tabular-nums">
+            {Math.round(avg).toLocaleString()}
+            {unit}
+          </p>
         </div>
         <div>
           <p className="text-xs text-zinc-500">Min</p>
-          <p className="text-sm font-medium text-zinc-300 tabular-nums">{Math.round(min).toLocaleString()}{unit}</p>
+          <p className="text-sm font-medium text-zinc-300 tabular-nums">
+            {Math.round(min).toLocaleString()}
+            {unit}
+          </p>
         </div>
         <div>
           <p className="text-xs text-zinc-500">Max</p>
-          <p className="text-sm font-medium text-zinc-300 tabular-nums">{Math.round(max).toLocaleString()}{unit}</p>
+          <p className="text-sm font-medium text-zinc-300 tabular-nums">
+            {Math.round(max).toLocaleString()}
+            {unit}
+          </p>
         </div>
         {alarm && (
           <div className="ml-auto">
-            <span className={cn(
-              "text-xs px-2 py-1 rounded-full font-medium",
-              isAlarming
-                ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-            )}>
+            <span
+              className={cn(
+                "text-xs px-2 py-1 rounded-full font-medium",
+                isAlarming
+                  ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                  : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+              )}
+            >
               {isAlarming ? "⚠ ALARM" : "✓ OK"}
             </span>
           </div>
@@ -132,7 +152,10 @@ export function MetricWidget({
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           {multiLine ? (
-            <LineChart data={formatted} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <LineChart
+              data={formatted}
+              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
               <XAxis
                 dataKey="time"
@@ -157,9 +180,19 @@ export function MetricWidget({
                   fontSize: "11px",
                 }}
                 labelStyle={{ color: "#a1a1aa" }}
-                formatter={(value: number, name: string) => [`${value.toLocaleString()}${unit}`, name]}
+                formatter={(value: number, name: string) => [
+                  `${value.toLocaleString()}${unit}`,
+                  name,
+                ]}
               />
-              <Line type="monotone" dataKey="primary" stroke={color} strokeWidth={2} dot={false} name="P50" />
+              <Line
+                type="monotone"
+                dataKey="primary"
+                stroke={color}
+                strokeWidth={2}
+                dot={false}
+                name="P50"
+              />
               {multiLine.map((line) => (
                 <Line
                   key={line.label}
@@ -188,7 +221,10 @@ export function MetricWidget({
               )}
             </LineChart>
           ) : chartType === "line" ? (
-            <LineChart data={formatted} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <LineChart
+              data={formatted}
+              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
               <XAxis
                 dataKey="time"
@@ -213,9 +249,18 @@ export function MetricWidget({
                   fontSize: "11px",
                 }}
                 labelStyle={{ color: "#a1a1aa" }}
-                formatter={(value: number) => [`${value.toLocaleString()}${unit}`, title]}
+                formatter={(value: number) => [
+                  `${value.toLocaleString()}${unit}`,
+                  title,
+                ]}
               />
-              <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke={color}
+                strokeWidth={2}
+                dot={false}
+              />
               {alarm && (
                 <ReferenceLine
                   y={alarm.value}
@@ -232,11 +277,28 @@ export function MetricWidget({
               )}
             </LineChart>
           ) : (
-            <AreaChart data={formatted} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={formatted}
+              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            >
               <defs>
-                <linearGradient id={`grad-${title.replace(/\s/g, "")}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={fillColor ?? color} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={fillColor ?? color} stopOpacity={0} />
+                <linearGradient
+                  id={`grad-${title.replace(/\s/g, "")}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor={fillColor ?? color}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={fillColor ?? color}
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -263,7 +325,10 @@ export function MetricWidget({
                   fontSize: "11px",
                 }}
                 labelStyle={{ color: "#a1a1aa" }}
-                formatter={(value: number) => [`${value.toLocaleString()}${unit}`, title]}
+                formatter={(value: number) => [
+                  `${value.toLocaleString()}${unit}`,
+                  title,
+                ]}
               />
               <Area
                 type="monotone"

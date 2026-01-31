@@ -20,11 +20,15 @@ export function Settings() {
   // Budget form state
   const [budgetName, setBudgetName] = useState("");
   const [budgetLimit, setBudgetLimit] = useState("10");
-  const [budgetPeriod, setBudgetPeriod] = useState<"hourly" | "daily" | "weekly" | "monthly">("daily");
+  const [budgetPeriod, setBudgetPeriod] = useState<
+    "hourly" | "daily" | "weekly" | "monthly"
+  >("daily");
   const [budgetHardStop, setBudgetHardStop] = useState(false);
 
   // Notification form state
-  const [channelType, setChannelType] = useState<"discord" | "email" | "webhook">("discord");
+  const [channelType, setChannelType] = useState<
+    "discord" | "email" | "webhook"
+  >("discord");
   const [channelName, setChannelName] = useState("");
   const [channelWebhook, setChannelWebhook] = useState("");
   const [channelEmail, setChannelEmail] = useState("");
@@ -92,7 +96,9 @@ export function Settings() {
             />
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="text-xs text-zinc-500 mb-1 block">Limit ($)</label>
+                <label className="text-xs text-zinc-500 mb-1 block">
+                  Limit ($)
+                </label>
                 <input
                   type="number"
                   step="0.01"
@@ -102,10 +108,14 @@ export function Settings() {
                 />
               </div>
               <div className="flex-1">
-                <label className="text-xs text-zinc-500 mb-1 block">Period</label>
+                <label className="text-xs text-zinc-500 mb-1 block">
+                  Period
+                </label>
                 <select
                   value={budgetPeriod}
-                  onChange={(e) => setBudgetPeriod(e.target.value as typeof budgetPeriod)}
+                  onChange={(e) =>
+                    setBudgetPeriod(e.target.value as typeof budgetPeriod)
+                  }
                   className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-keel-500"
                 >
                   <option value="hourly">Hourly</option>
@@ -151,7 +161,9 @@ export function Settings() {
                 <div className="flex items-center gap-3">
                   <DollarSign className="w-4 h-4 text-zinc-500" />
                   <div>
-                    <p className="text-sm font-medium text-zinc-200">{budget.name}</p>
+                    <p className="text-sm font-medium text-zinc-200">
+                      {budget.name}
+                    </p>
                     <p className="text-xs text-zinc-500">
                       {formatCost(budget.limitDollars)} / {budget.period}
                       {budget.hardStop && " · Hard stop"}
@@ -168,7 +180,9 @@ export function Settings() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-zinc-600 text-center py-4">No budgets configured</p>
+          <p className="text-sm text-zinc-600 text-center py-4">
+            No budgets configured
+          </p>
         )}
       </Card>
 
@@ -193,7 +207,9 @@ export function Settings() {
                 <label className="text-xs text-zinc-500 mb-1 block">Type</label>
                 <select
                   value={channelType}
-                  onChange={(e) => setChannelType(e.target.value as typeof channelType)}
+                  onChange={(e) =>
+                    setChannelType(e.target.value as typeof channelType)
+                  }
                   className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-200 focus:outline-none focus:border-keel-500"
                 >
                   <option value="discord">Discord Webhook</option>
@@ -257,7 +273,9 @@ export function Settings() {
                 <div className="flex items-center gap-3">
                   <Bell className="w-4 h-4 text-zinc-500" />
                   <div>
-                    <p className="text-sm font-medium text-zinc-200">{channel.name}</p>
+                    <p className="text-sm font-medium text-zinc-200">
+                      {channel.name}
+                    </p>
                     <p className="text-xs text-zinc-500">{channel.type}</p>
                   </div>
                 </div>
@@ -267,7 +285,7 @@ export function Settings() {
                       "text-xs px-2 py-0.5 rounded-full",
                       channel.isActive
                         ? "bg-emerald-500/10 text-emerald-400"
-                        : "bg-zinc-700/50 text-zinc-500"
+                        : "bg-zinc-700/50 text-zinc-500",
                     )}
                   >
                     {channel.isActive ? "Active" : "Disabled"}
@@ -290,10 +308,15 @@ export function Settings() {
       </Card>
 
       {/* Gateway Connection */}
-      <Card title="Gateway Connection" subtitle="Connect to your Clawdbot gateway">
+      <Card
+        title="Gateway Connection"
+        subtitle="Connect to your Clawdbot gateway"
+      >
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">Gateway URL</label>
+            <label className="text-xs text-zinc-500 mb-1 block">
+              Gateway URL
+            </label>
             <input
               type="url"
               placeholder="ws://127.0.0.1:18789"
@@ -301,7 +324,9 @@ export function Settings() {
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-500 mb-1 block">Gateway Token</label>
+            <label className="text-xs text-zinc-500 mb-1 block">
+              Gateway Token
+            </label>
             <input
               type="password"
               placeholder="Your gateway token"

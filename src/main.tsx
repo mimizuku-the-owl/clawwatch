@@ -5,7 +5,7 @@ import { App } from "./App";
 import "./index.css";
 
 const convex = new ConvexReactClient(
-  import.meta.env.VITE_CONVEX_URL ?? "http://127.0.0.1:3210"
+  import.meta.env.VITE_CONVEX_URL ?? "http://127.0.0.1:3210",
 );
 
 createRoot(document.getElementById("root")!).render(
@@ -13,5 +13,5 @@ createRoot(document.getElementById("root")!).render(
     <ConvexProvider client={convex}>
       <App />
     </ConvexProvider>
-  </StrictMode>
+  </StrictMode>,
 );

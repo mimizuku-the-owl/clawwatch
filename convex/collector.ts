@@ -6,23 +6,26 @@ import { internal } from "./_generated/api";
 export const ingestSessions = mutation({
   args: {
     gatewayUrl: v.string(),
-    sessions: v.array(v.object({
-      key: v.string(),
-      kind: v.string(),
-      channel: v.optional(v.string()),
-      displayName: v.optional(v.string()),
-      model: v.optional(v.string()),
-      totalTokens: v.number(),
-      updatedAt: v.number(),
-      agentId: v.optional(v.string()), // extracted from key like "agent:mimizuku:..."
-    })),
+    sessions: v.array(
+      v.object({
+        key: v.string(),
+        kind: v.string(),
+        channel: v.optional(v.string()),
+        displayName: v.optional(v.string()),
+        model: v.optional(v.string()),
+        totalTokens: v.number(),
+        updatedAt: v.number(),
+        agentId: v.optional(v.string()), // extracted from key like "agent:mimizuku:..."
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     let ingested = 0;
 
     for (const session of args.sessions) {
       // Extract agent name from session key
-      const agentName = session.agentId ?? session.key.split(":")[1] ?? "unknown";
+      const agentName =
+        session.agentId ?? session.key.split(":")[1] ?? "unknown";
 
       // Find or create agent
       let agent = await ctx.db
@@ -99,18 +102,20 @@ export const ingestSessions = mutation({
 // Ingest cost data from transcript entries
 export const ingestCosts = mutation({
   args: {
-    entries: v.array(v.object({
-      agentName: v.string(),
-      sessionKey: v.optional(v.string()),
-      provider: v.string(),
-      model: v.string(),
-      inputTokens: v.number(),
-      outputTokens: v.number(),
-      cacheReadTokens: v.optional(v.number()),
-      cacheWriteTokens: v.optional(v.number()),
-      totalCost: v.number(),
-      timestamp: v.number(),
-    })),
+    entries: v.array(
+      v.object({
+        agentName: v.string(),
+        sessionKey: v.optional(v.string()),
+        provider: v.string(),
+        model: v.string(),
+        inputTokens: v.number(),
+        outputTokens: v.number(),
+        cacheReadTokens: v.optional(v.number()),
+        cacheWriteTokens: v.optional(v.number()),
+        totalCost: v.number(),
+        timestamp: v.number(),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     let ingested = 0;
@@ -148,22 +153,24 @@ export const ingestCosts = mutation({
 // Ingest activities from transcript entries
 export const ingestActivities = mutation({
   args: {
-    activities: v.array(v.object({
-      agentName: v.string(),
-      type: v.union(
-        v.literal("message_sent"),
-        v.literal("message_received"),
-        v.literal("tool_call"),
-        v.literal("session_started"),
-        v.literal("session_ended"),
-        v.literal("error"),
-        v.literal("heartbeat"),
-        v.literal("alert_fired"),
-      ),
-      summary: v.string(),
-      sessionKey: v.optional(v.string()),
-      channel: v.optional(v.string()),
-    })),
+    activities: v.array(
+      v.object({
+        agentName: v.string(),
+        type: v.union(
+          v.literal("message_sent"),
+          v.literal("message_received"),
+          v.literal("tool_call"),
+          v.literal("session_started"),
+          v.literal("session_ended"),
+          v.literal("error"),
+          v.literal("heartbeat"),
+          v.literal("alert_fired"),
+        ),
+        summary: v.string(),
+        sessionKey: v.optional(v.string()),
+        channel: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     let ingested = 0;

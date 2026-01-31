@@ -7,7 +7,13 @@ import { ActivityFeed } from "./pages/ActivityFeed";
 import { Settings } from "./pages/Settings";
 import { Sidebar } from "./components/Sidebar";
 
-type Page = "dashboard" | "metrics" | "costs" | "alerts" | "activity" | "settings";
+type Page =
+  | "dashboard"
+  | "metrics"
+  | "costs"
+  | "alerts"
+  | "activity"
+  | "settings";
 
 export function App() {
   const [page, setPage] = useState<Page>("dashboard");

@@ -18,7 +18,8 @@ const GATEWAY_URL = process.env.GATEWAY_URL;
 const GATEWAY_TOKEN = process.env.GATEWAY_TOKEN;
 const CONVEX_URL = process.env.CONVEX_URL ?? "http://127.0.0.1:3210";
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL ?? "30000"); // 30 seconds
-const SESSIONS_DIR = process.env.SESSIONS_DIR ?? "/home/moltbot/.clawdbot/agents";
+const SESSIONS_DIR =
+  process.env.SESSIONS_DIR ?? "/home/moltbot/.clawdbot/agents";
 
 if (!GATEWAY_URL) {
   console.error("❌ GATEWAY_URL environment variable is required");
@@ -36,11 +37,14 @@ const convex = new ConvexHttpClient(CONVEX_URL);
 const ingestedCosts = new Set<string>();
 let lastPollTime = Date.now() - 86400000 * 3; // Start from 3 days ago for initial scan
 
-async function invokeGatewayTool(tool: string, args: Record<string, unknown> = {}): Promise<any> {
+async function invokeGatewayTool(
+  tool: string,
+  args: Record<string, unknown> = {},
+): Promise<any> {
   const res = await fetch(`${GATEWAY_URL}/tools/invoke`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${GATEWAY_TOKEN}`,
+      Authorization: `Bearer ${GATEWAY_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ tool, args }),
@@ -60,7 +64,9 @@ async function pollSessions(): Promise<void> {
   const startTime = Date.now();
 
   try {
-    const result = await invokeGatewayTool("sessions_list", { messageLimit: 0 });
+    const result = await invokeGatewayTool("sessions_list", {
+      messageLimit: 0,
+    });
     const sessions = result.details?.sessions ?? [];
 
     const responseTimeMs = Date.now() - startTime;
@@ -147,7 +153,12 @@ async function pollTranscripts(): Promise<void> {
 
         const activities: Array<{
           agentName: string;
-          type: "message_sent" | "message_received" | "tool_call" | "error" | "heartbeat";
+          type:
+            | "message_sent"
+            | "message_received"
+            | "tool_call"
+            | "error"
+            | "heartbeat";
           summary: string;
           sessionKey: string | undefined;
           channel: string | undefined;
@@ -156,7 +167,8 @@ async function pollTranscripts(): Promise<void> {
         for (const line of lines) {
           try {
             const entry = JSON.parse(line);
-            if (entry.type !== "message" || !entry.message?.usage?.cost) continue;
+            if (entry.type !== "message" || !entry.message?.usage?.cost)
+              continue;
 
             const msg = entry.message;
             const ts = msg.timestamp ?? new Date(entry.timestamp).getTime();
@@ -184,7 +196,9 @@ async function pollTranscripts(): Promise<void> {
 
             // Extract activity
             if (msg.role === "assistant" && msg.content) {
-              for (const block of Array.isArray(msg.content) ? msg.content : []) {
+              for (const block of Array.isArray(msg.content)
+                ? msg.content
+                : []) {
                 if (block.type === "toolCall") {
                   activities.push({
                     agentName: agentDir,
@@ -212,19 +226,29 @@ async function pollTranscripts(): Promise<void> {
 
         // Batch ingest
         if (costEntries.length > 0) {
-          const { ingested } = await convex.mutation(api.collector.ingestCosts, {
-            entries: costEntries,
-          });
-          console.log(`[poll] Ingested ${ingested} cost entries from ${agentDir}/${file}`);
+          const { ingested } = await convex.mutation(
+            api.collector.ingestCosts,
+            {
+              entries: costEntries,
+            },
+          );
+          console.log(
+            `[poll] Ingested ${ingested} cost entries from ${agentDir}/${file}`,
+          );
         }
 
         // Limit activities to prevent flooding
         if (activities.length > 0) {
           const recentActivities = activities.slice(-20);
-          const { ingested } = await convex.mutation(api.collector.ingestActivities, {
-            activities: recentActivities,
-          });
-          console.log(`[poll] Ingested ${ingested} activities from ${agentDir}/${file}`);
+          const { ingested } = await convex.mutation(
+            api.collector.ingestActivities,
+            {
+              activities: recentActivities,
+            },
+          );
+          console.log(
+            `[poll] Ingested ${ingested} activities from ${agentDir}/${file}`,
+          );
         }
       }
     }
@@ -238,7 +262,9 @@ async function evaluateAlerts(): Promise<void> {
   try {
     const result = await convex.mutation(api.evaluateAlerts.evaluate, {});
     if (result.fired > 0) {
-      console.log(`[poll] ⚠️  Fired ${result.fired} alerts (evaluated ${result.evaluated} rules)`);
+      console.log(
+        `[poll] ⚠️  Fired ${result.fired} alerts (evaluated ${result.evaluated} rules)`,
+      );
     } else {
       console.log(`[poll] All clear (evaluated ${result.evaluated} rules)`);
     }

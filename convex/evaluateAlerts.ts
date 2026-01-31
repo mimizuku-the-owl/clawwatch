@@ -13,7 +13,10 @@ export const evaluate = mutation({
 
     for (const rule of activeRules) {
       // Check cooldown
-      if (rule.lastTriggered && now - rule.lastTriggered < rule.cooldownMinutes * 60000) {
+      if (
+        rule.lastTriggered &&
+        now - rule.lastTriggered < rule.cooldownMinutes * 60000
+      ) {
         continue;
       }
 
@@ -46,7 +49,9 @@ export const evaluate = mutation({
               shouldFire = true;
               severity = "critical";
               title = `Agent "${agent.name}" is offline`;
-              const minsOffline = Math.round((now - agent.lastHeartbeat) / 60000);
+              const minsOffline = Math.round(
+                (now - agent.lastHeartbeat) / 60000,
+              );
               message = `No heartbeat for ${minsOffline} minutes`;
               targetAgentId = agent._id;
               // Mark agent offline
@@ -69,7 +74,7 @@ export const evaluate = mutation({
               .take(200);
 
             const recentErrors = recentActivities.filter(
-              (a) => a.type === "error" && a._creationTime > now - windowMs
+              (a) => a.type === "error" && a._creationTime > now - windowMs,
             );
 
             if (recentErrors.length >= threshold) {
@@ -117,10 +122,13 @@ export const evaluate = mutation({
               .collect();
 
             const discordSessions = channelSessions.filter(
-              (s) => s.channel === "discord" && s.isActive
+              (s) => s.channel === "discord" && s.isActive,
             );
 
-            if (discordSessions.length === 0 && channelSessions.some((s) => s.channel === "discord")) {
+            if (
+              discordSessions.length === 0 &&
+              channelSessions.some((s) => s.channel === "discord")
+            ) {
               shouldFire = true;
               severity = "warning";
               title = `Channel disconnect on "${agent.name}"`;
@@ -140,7 +148,7 @@ export const evaluate = mutation({
               const recentCosts = await ctx.db
                 .query("costRecords")
                 .withIndex("by_agent_time", (q) =>
-                  q.eq("agentId", agent._id).gte("timestamp", oneHourAgo)
+                  q.eq("agentId", agent._id).gte("timestamp", oneHourAgo),
                 )
                 .collect();
 

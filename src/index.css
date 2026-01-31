@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-keel-50: #f0fdfa;
-  --color-keel-100: #ccfbf1;
-  --color-keel-200: #99f6e4;
-  --color-keel-300: #5eead4;
-  --color-keel-400: #2dd4bf;
-  --color-keel-500: #14b8a6;
-  --color-keel-600: #0d9488;
-  --color-keel-700: #0f766e;
-  --color-keel-800: #115e59;
-  --color-keel-900: #134e4a;
-  --color-keel-950: #042f2e;
+  --color-keel-50: #faf5ff;
+  --color-keel-100: #f3e8ff;
+  --color-keel-200: #e9d5ff;
+  --color-keel-300: #d8b4fe;
+  --color-keel-400: #c084fc;
+  --color-keel-500: #a855f7;
+  --color-keel-600: #9333ea;
+  --color-keel-700: #7e22ce;
+  --color-keel-800: #6b21a8;
+  --color-keel-900: #581c87;
+  --color-keel-950: #3b0764;
 }
 
 body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
 }

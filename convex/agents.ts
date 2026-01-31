@@ -22,11 +22,17 @@ export const upsert = mutation({
   args: {
     name: v.string(),
     gatewayUrl: v.string(),
-    status: v.union(v.literal("online"), v.literal("offline"), v.literal("degraded")),
-    config: v.optional(v.object({
-      model: v.optional(v.string()),
-      channel: v.optional(v.string()),
-    })),
+    status: v.union(
+      v.literal("online"),
+      v.literal("offline"),
+      v.literal("degraded"),
+    ),
+    config: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        channel: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -57,7 +63,11 @@ export const upsert = mutation({
 export const heartbeat = mutation({
   args: {
     agentId: v.id("agents"),
-    status: v.union(v.literal("online"), v.literal("offline"), v.literal("degraded")),
+    status: v.union(
+      v.literal("online"),
+      v.literal("offline"),
+      v.literal("degraded"),
+    ),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
@@ -98,14 +108,14 @@ export const healthSummary = query({
     const recentCosts = await ctx.db
       .query("costRecords")
       .withIndex("by_agent_time", (q) =>
-        q.eq("agentId", args.agentId).gte("timestamp", oneHourAgo)
+        q.eq("agentId", args.agentId).gte("timestamp", oneHourAgo),
       )
       .collect();
 
     const costLastHour = recentCosts.reduce((sum, r) => sum + r.cost, 0);
     const tokensLastHour = recentCosts.reduce(
       (sum, r) => sum + r.inputTokens + r.outputTokens,
-      0
+      0,
     );
 
     // Get recent errors
@@ -116,7 +126,7 @@ export const healthSummary = query({
       .take(100);
 
     const recentErrors = recentActivities.filter(
-      (a) => a.type === "error" && a._creationTime > oneHourAgo
+      (a) => a.type === "error" && a._creationTime > oneHourAgo,
     );
 
     return {

@@ -38,7 +38,7 @@ export const byTimeRange = query({
           q
             .eq("agentId", args.agentId!)
             .gte("timestamp", args.startTime)
-            .lte("timestamp", args.endTime)
+            .lte("timestamp", args.endTime),
         )
         .collect();
     }
@@ -50,7 +50,7 @@ export const byTimeRange = query({
         q
           .eq("period", "hourly")
           .gte("timestamp", args.startTime)
-          .lte("timestamp", args.endTime)
+          .lte("timestamp", args.endTime),
       )
       .collect();
   },
@@ -73,13 +73,15 @@ export const summary = query({
       ? await ctx.db
           .query("costRecords")
           .withIndex("by_agent_time", (q) =>
-            q.eq("agentId", args.agentId!).gte("timestamp", monthStart.getTime())
+            q
+              .eq("agentId", args.agentId!)
+              .gte("timestamp", monthStart.getTime()),
           )
           .collect()
       : await ctx.db
           .query("costRecords")
           .withIndex("by_period", (q) =>
-            q.eq("period", "hourly").gte("timestamp", monthStart.getTime())
+            q.eq("period", "hourly").gte("timestamp", monthStart.getTime()),
           )
           .collect();
 
@@ -116,21 +118,28 @@ export const timeSeries = query({
       ? await ctx.db
           .query("costRecords")
           .withIndex("by_agent_time", (q) =>
-            q.eq("agentId", args.agentId!).gte("timestamp", startTime)
+            q.eq("agentId", args.agentId!).gte("timestamp", startTime),
           )
           .collect()
       : await ctx.db
           .query("costRecords")
           .withIndex("by_period", (q) =>
-            q.eq("period", "hourly").gte("timestamp", startTime)
+            q.eq("period", "hourly").gte("timestamp", startTime),
           )
           .collect();
 
     // Bucket into hours
-    const buckets = new Map<number, { cost: number; tokens: number; requests: number }>();
+    const buckets = new Map<
+      number,
+      { cost: number; tokens: number; requests: number }
+    >();
     for (const r of records) {
       const hourKey = Math.floor(r.timestamp / 3600000) * 3600000;
-      const bucket = buckets.get(hourKey) ?? { cost: 0, tokens: 0, requests: 0 };
+      const bucket = buckets.get(hourKey) ?? {
+        cost: 0,
+        tokens: 0,
+        requests: 0,
+      };
       bucket.cost += r.cost;
       bucket.tokens += r.inputTokens + r.outputTokens;
       bucket.requests += 1;

@@ -62,25 +62,34 @@ export function CostExplorer() {
         {budgets && budgets.length > 0 ? (
           <div className="space-y-3">
             {budgets.map((budget) => {
-              const pct = budget.limitDollars > 0
-                ? Math.min(100, (budget.currentSpend / budget.limitDollars) * 100)
-                : 0;
+              const pct =
+                budget.limitDollars > 0
+                  ? Math.min(
+                      100,
+                      (budget.currentSpend / budget.limitDollars) * 100,
+                    )
+                  : 0;
               const isOver = pct >= 100;
               const isWarning = pct >= 80;
 
               return (
-                <div key={budget._id} className="border border-zinc-800 rounded-lg p-4">
+                <div
+                  key={budget._id}
+                  className="border border-zinc-800 rounded-lg p-4"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <span className="text-sm font-medium text-zinc-200">
                         {budget.name}
                       </span>
                       <span className="text-xs text-zinc-500 ml-2">
-                        {budget.period} · {budget.hardStop ? "Hard stop" : "Alert only"}
+                        {budget.period} ·{" "}
+                        {budget.hardStop ? "Hard stop" : "Alert only"}
                       </span>
                     </div>
                     <span className="text-sm font-mono text-zinc-300">
-                      {formatCost(budget.currentSpend)} / {formatCost(budget.limitDollars)}
+                      {formatCost(budget.currentSpend)} /{" "}
+                      {formatCost(budget.limitDollars)}
                     </span>
                   </div>
                   <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">

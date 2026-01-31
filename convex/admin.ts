@@ -5,8 +5,16 @@ export const clearAll = mutation({
   args: {},
   handler: async (ctx) => {
     const tables = [
-      "agents", "sessions", "costRecords", "budgets", "alertRules",
-      "alerts", "activities", "healthChecks", "snitchEvents", "notificationChannels",
+      "agents",
+      "sessions",
+      "costRecords",
+      "budgets",
+      "alertRules",
+      "alerts",
+      "activities",
+      "healthChecks",
+      "snitchEvents",
+      "notificationChannels",
     ] as const;
 
     let total = 0;
