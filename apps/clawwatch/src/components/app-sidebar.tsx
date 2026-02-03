@@ -7,6 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@clawwatch/ui/components/sidebar";
+import { Link } from "@tanstack/react-router";
 import {
   Bell,
   Bot,
@@ -17,7 +18,6 @@ import {
 } from "lucide-react";
 import { NavFooter } from "@/components/nav-footer";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 
 export type NavItem = {
   title: string;
@@ -30,10 +30,6 @@ const mainItems: NavItem[] = [
   { title: "Agents", url: "/agents", icon: Bot },
   { title: "Costs", url: "/costs", icon: DollarSign },
   { title: "Alerts", url: "/alerts", icon: Bell },
-];
-
-const secondaryItems: NavItem[] = [
-  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -59,10 +55,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         <NavMain items={mainItems} />
-        <NavSecondary items={secondaryItems} />
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild size="sm">
+              <Link to="/settings">
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <NavFooter />
       </SidebarFooter>
     </Sidebar>
