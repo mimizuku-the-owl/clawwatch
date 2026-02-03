@@ -14,9 +14,11 @@ interface Props {
 
 export const CachePerformanceInternal = memo(
   function CachePerformanceInternal({ data }: Props) {
+    // Hit rate = cache reads / (cache reads + uncached input tokens)
+    const totalRequested = data.cacheReadTokens + data.totalInputTokens;
     const hitRate =
-      data.totalInputTokens > 0
-        ? (data.cacheReadTokens / data.totalInputTokens) * 100
+      totalRequested > 0
+        ? (data.cacheReadTokens / totalRequested) * 100
         : 0;
 
     const totalCacheTokens = data.cacheReadTokens + data.cacheWriteTokens;
