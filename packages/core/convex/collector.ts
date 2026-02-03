@@ -197,6 +197,49 @@ export const ingestActivities = mutation({
   },
 });
 
+// Update the pre-aggregated stats cache — accepts pre-aggregated deltas per cache key
+// Caller should group entries by cache key and sum them before calling
+export const updateStatsCache = mutation({
+  args: {
+    updates: v.array(
+      v.object({
+        key: v.string(),
+        cost: v.number(),
+        inputTokens: v.number(),
+        outputTokens: v.number(),
+        requests: v.number(),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const update of args.updates) {
+      const existing = await ctx.db
+        .query("statsCache")
+        .withIndex("by_key", (q) => q.eq("key", update.key))
+        .first();
+
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          cost: existing.cost + update.cost,
+          inputTokens: existing.inputTokens + update.inputTokens,
+          outputTokens: existing.outputTokens + update.outputTokens,
+          requests: existing.requests + update.requests,
+          updatedAt: Date.now(),
+        });
+      } else {
+        await ctx.db.insert("statsCache", {
+          key: update.key,
+          cost: update.cost,
+          inputTokens: update.inputTokens,
+          outputTokens: update.outputTokens,
+          requests: update.requests,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+  },
+});
+
 // Record a health check
 export const recordHealthCheck = mutation({
   args: {

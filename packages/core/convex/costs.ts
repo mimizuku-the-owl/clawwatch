@@ -56,50 +56,76 @@ export const byTimeRange = query({
   },
 });
 
-// Get cost summary — today, this week, this month
+// Get cost summary — reads from pre-aggregated statsCache for instant response
 export const summary = query({
   args: { agentId: v.optional(v.id("agents")) },
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     const now = Date.now();
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - 7);
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const currentHourKey = Math.floor(now / 3600000) * 3600000;
+    const prevHourKey = currentHourKey - 3600000;
 
-    const allRecords = args.agentId
-      ? await ctx.db
-          .query("costRecords")
-          .withIndex("by_agent_time", (q) =>
-            q
-              .eq("agentId", args.agentId!)
-              .gte("timestamp", monthStart.getTime()),
-          )
-          .collect()
-      : await ctx.db
-          .query("costRecords")
-          .withIndex("by_period", (q) =>
-            q.eq("period", "hourly").gte("timestamp", monthStart.getTime()),
-          )
-          .collect();
+    const zero = { cost: 0, inputTokens: 0, outputTokens: 0, requests: 0 };
 
-    const today = allRecords.filter((r) => r.timestamp >= todayStart.getTime());
-    const week = allRecords.filter((r) => r.timestamp >= weekStart.getTime());
+    // Read today's cache
+    const todayCache = await ctx.db
+      .query("statsCache")
+      .withIndex("by_key", (q) => q.eq("key", `today:${todayStr}`))
+      .first();
 
-    const sum = (records: typeof allRecords) => ({
-      cost: Math.round(records.reduce((s, r) => s + r.cost, 0) * 10000) / 10000,
-      inputTokens: records.reduce((s, r) => s + r.inputTokens, 0),
-      outputTokens: records.reduce((s, r) => s + r.outputTokens, 0),
-      requests: records.length,
-    });
+    // Read last 2 hour caches for "last hour" approximation
+    const thisHourCache = await ctx.db
+      .query("statsCache")
+      .withIndex("by_key", (q) => q.eq("key", `hour:${currentHourKey}`))
+      .first();
+    const prevHourCache = await ctx.db
+      .query("statsCache")
+      .withIndex("by_key", (q) => q.eq("key", `hour:${prevHourKey}`))
+      .first();
+
+    // Sum recent days for week/month from statsCache
+    const weekDays: (typeof todayCache)[] = [];
+    const monthDays: (typeof todayCache)[] = [];
+    for (let i = 0; i < 31; i++) {
+      const d = new Date(now - i * 86400000).toISOString().slice(0, 10);
+      const dayCache =
+        i === 0
+          ? todayCache
+          : await ctx.db
+              .query("statsCache")
+              .withIndex("by_key", (q) => q.eq("key", `today:${d}`))
+              .first();
+      if (dayCache) {
+        if (i < 7) weekDays.push(dayCache);
+        monthDays.push(dayCache);
+      }
+    }
+
+    const sumCaches = (caches: (typeof todayCache)[]) => {
+      const result = { ...zero };
+      for (const c of caches) {
+        if (!c) continue;
+        result.cost += c.cost;
+        result.inputTokens += c.inputTokens;
+        result.outputTokens += c.outputTokens;
+        result.requests += c.requests;
+      }
+      result.cost = Math.round(result.cost * 10000) / 10000;
+      return result;
+    };
 
     return {
-      today: sum(today),
-      week: sum(week),
-      month: sum(allRecords),
-      lastHour: sum(allRecords.filter((r) => r.timestamp >= now - 3600000)),
+      today: todayCache
+        ? {
+            cost: Math.round(todayCache.cost * 10000) / 10000,
+            inputTokens: todayCache.inputTokens,
+            outputTokens: todayCache.outputTokens,
+            requests: todayCache.requests,
+          }
+        : zero,
+      lastHour: sumCaches([thisHourCache, prevHourCache]),
+      week: sumCaches(weekDays),
+      month: sumCaches(monthDays),
     };
   },
 });
@@ -116,7 +142,7 @@ export const byAgent = query({
           .gte("timestamp", args.startTime)
           .lte("timestamp", args.endTime),
       )
-      .collect();
+      .take(500);
 
     const agentTotals = new Map<
       string,
@@ -160,7 +186,7 @@ export const modelBreakdown = query({
           .gte("timestamp", args.startTime)
           .lte("timestamp", args.endTime),
       )
-      .collect();
+      .take(500);
 
     const modelTotals = new Map<
       string,
@@ -221,7 +247,7 @@ export const topSessions = query({
           .gte("timestamp", args.startTime)
           .lte("timestamp", args.endTime),
       )
-      .collect();
+      .take(500);
 
     const sessionTotals = new Map<
       string,
@@ -264,7 +290,7 @@ export const topSessions = query({
   },
 });
 
-// Get cost over time for charts (hourly buckets)
+// Get cost over time for charts (hourly buckets) — reads from statsCache
 export const timeSeries = query({
   args: {
     agentId: v.optional(v.id("agents")),
@@ -272,46 +298,27 @@ export const timeSeries = query({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
-    const startTime = now - args.hours * 3600000;
+    const currentHourKey = Math.floor(now / 3600000) * 3600000;
+    const results = [];
 
-    const records = args.agentId
-      ? await ctx.db
-          .query("costRecords")
-          .withIndex("by_agent_time", (q) =>
-            q.eq("agentId", args.agentId!).gte("timestamp", startTime),
-          )
-          .collect()
-      : await ctx.db
-          .query("costRecords")
-          .withIndex("by_period", (q) =>
-            q.eq("period", "hourly").gte("timestamp", startTime),
-          )
-          .collect();
+    // Read hour cache entries for the requested range
+    for (let i = 0; i < args.hours; i++) {
+      const hourKey = currentHourKey - i * 3600000;
+      const cached = await ctx.db
+        .query("statsCache")
+        .withIndex("by_key", (q) => q.eq("key", `hour:${hourKey}`))
+        .first();
 
-    // Bucket into hours
-    const buckets = new Map<
-      number,
-      { cost: number; tokens: number; requests: number }
-    >();
-    for (const r of records) {
-      const hourKey = Math.floor(r.timestamp / 3600000) * 3600000;
-      const bucket = buckets.get(hourKey) ?? {
-        cost: 0,
-        tokens: 0,
-        requests: 0,
-      };
-      bucket.cost += r.cost;
-      bucket.tokens += r.inputTokens + r.outputTokens;
-      bucket.requests += 1;
-      buckets.set(hourKey, bucket);
+      if (cached) {
+        results.push({
+          timestamp: hourKey,
+          cost: Math.round(cached.cost * 10000) / 10000,
+          tokens: cached.inputTokens + cached.outputTokens,
+          requests: cached.requests,
+        });
+      }
     }
 
-    return Array.from(buckets.entries())
-      .map(([timestamp, data]) => ({
-        timestamp,
-        ...data,
-        cost: Math.round(data.cost * 10000) / 10000,
-      }))
-      .sort((a, b) => a.timestamp - b.timestamp);
+    return results.sort((a, b) => a.timestamp - b.timestamp);
   },
 });

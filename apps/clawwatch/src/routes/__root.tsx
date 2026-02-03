@@ -16,9 +16,18 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 import appCss from "../styles.css?url";
 
-const convex = new ConvexReactClient(
-  import.meta.env.VITE_CONVEX_URL ?? "http://127.0.0.1:3210",
-);
+// Browser: use same origin (Vite proxies /api → Convex backend)
+// SSR: use direct Convex URL
+function getConvexUrl(): string {
+  if (typeof window !== "undefined") {
+    // Same origin — Vite proxy handles /api → Convex :3210
+    return window.location.origin;
+  }
+  // SSR: direct connection
+  return import.meta.env.VITE_CONVEX_URL ?? "http://127.0.0.1:3210";
+}
+
+const convex = new ConvexReactClient(getConvexUrl());
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;

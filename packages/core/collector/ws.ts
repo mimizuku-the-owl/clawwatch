@@ -227,16 +227,63 @@ async function scanHistoricalTranscripts(): Promise<void> {
           }
         }
 
-        // Batch ingest
+        // Batch ingest in chunks to avoid mutation timeout
         if (costEntries.length > 0) {
-          const { ingested } = await convex.mutation(
-            api.collector.ingestCosts,
+          const CHUNK_SIZE = 25;
+          let totalIngested = 0;
+
+          for (let i = 0; i < costEntries.length; i += CHUNK_SIZE) {
+            const chunk = costEntries.slice(i, i + CHUNK_SIZE);
+            const { ingested } = await convex.mutation(
+              api.collector.ingestCosts,
+              { entries: chunk },
+            );
+            totalIngested += ingested;
+          }
+
+          // Update stats cache with aggregated deltas
+          const cacheDeltas = new Map<
+            string,
             {
-              entries: costEntries,
-            },
+              cost: number;
+              inputTokens: number;
+              outputTokens: number;
+              requests: number;
+            }
+          >();
+          for (const entry of costEntries) {
+            const dateStr = new Date(entry.timestamp)
+              .toISOString()
+              .slice(0, 10);
+            const hourKey = Math.floor(entry.timestamp / 3600000) * 3600000;
+
+            for (const key of [`today:${dateStr}`, `hour:${hourKey}`]) {
+              const existing = cacheDeltas.get(key) ?? {
+                cost: 0,
+                inputTokens: 0,
+                outputTokens: 0,
+                requests: 0,
+              };
+              existing.cost += entry.totalCost;
+              existing.inputTokens += entry.inputTokens;
+              existing.outputTokens += entry.outputTokens;
+              existing.requests += 1;
+              cacheDeltas.set(key, existing);
+            }
+          }
+
+          // Send aggregated cache updates in small batches
+          const cacheUpdates = Array.from(cacheDeltas.entries()).map(
+            ([key, data]) => ({ key, ...data }),
           );
+          for (let i = 0; i < cacheUpdates.length; i += 10) {
+            await convex.mutation(api.collector.updateStatsCache, {
+              updates: cacheUpdates.slice(i, i + 10),
+            });
+          }
+
           console.log(
-            `[ws] Historical backfill: ingested ${ingested} cost entries from ${agentDir}/${file}`,
+            `[ws] Historical backfill: ingested ${totalIngested} cost entries from ${agentDir}/${file}`,
           );
         }
 
@@ -339,6 +386,29 @@ async function handleAgentEvent(
 
     await convex.mutation(api.collector.ingestCosts, {
       entries: [costEntry],
+    });
+
+    // Update stats cache for real-time data
+    const ts = costEntry.timestamp;
+    const dateStr = new Date(ts).toISOString().slice(0, 10);
+    const hourKey = Math.floor(ts / 3600000) * 3600000;
+    await convex.mutation(api.collector.updateStatsCache, {
+      updates: [
+        {
+          key: `today:${dateStr}`,
+          cost: costEntry.totalCost,
+          inputTokens: costEntry.inputTokens,
+          outputTokens: costEntry.outputTokens,
+          requests: 1,
+        },
+        {
+          key: `hour:${hourKey}`,
+          cost: costEntry.totalCost,
+          inputTokens: costEntry.inputTokens,
+          outputTokens: costEntry.outputTokens,
+          requests: 1,
+        },
+      ],
     });
   }
 

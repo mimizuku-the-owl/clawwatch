@@ -21,6 +21,15 @@ const config = defineConfig({
     host: "0.0.0.0",
     port: 5173,
     allowedHosts: true,
+    proxy: {
+      // Proxy Convex sync WebSocket + API through the same port
+      // so exit nodes / firewalls can't block port 3210
+      "/api": {
+        target: "http://100.115.177.85:3210",
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
 });
 

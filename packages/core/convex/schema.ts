@@ -193,6 +193,17 @@ export default defineSchema({
     timestamp: v.number(),
   }).index("by_agent", ["agentId"]),
 
+  // Pre-aggregated stats cache — updated incrementally by collector
+  // Single document per period key (e.g. "today:2026-02-03", "hour:1770152400000")
+  statsCache: defineTable({
+    key: v.string(), // "today:YYYY-MM-DD" | "hour:<epoch>" | "week" | "month"
+    cost: v.number(),
+    inputTokens: v.number(),
+    outputTokens: v.number(),
+    requests: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+
   // Notification channels config
   notificationChannels: defineTable({
     type: v.union(
