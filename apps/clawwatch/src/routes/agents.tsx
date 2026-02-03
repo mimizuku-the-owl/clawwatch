@@ -1,3 +1,4 @@
+import { Badge } from "@clawwatch/ui/components/badge";
 import { Button } from "@clawwatch/ui/components/button";
 import {
   Card,
@@ -14,12 +15,22 @@ import {
 } from "@clawwatch/ui/components/dialog";
 import { Input } from "@clawwatch/ui/components/input";
 import { Label } from "@clawwatch/ui/components/label";
+import { cn } from "@clawwatch/ui/lib/utils";
 import { api } from "@convex/api";
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
 import { useQuery, useMutation } from "convex/react";
-import { Plus } from "lucide-react";
-import { useState } from "react";
-import { AgentStatusCard } from "@/components/agent-status-card";
+import {
+  Activity,
+  Bot,
+  Circle,
+  Clock,
+  DollarSign,
+  Plus,
+  Search,
+} from "lucide-react";
+import type { ChangeEvent } from "react";
+import { memo, useMemo, useState } from "react";
+import { formatCost, statusColor, timeAgo } from "@/lib/utils";
 
 export const Route = createFileRoute("/agents")({
   component: AgentsPage,
@@ -32,9 +43,21 @@ function AgentsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [agentName, setAgentName] = useState("");
   const [gatewayUrl, setGatewayUrl] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  // Check if we're on a child route (agent detail page)
   const isOnChildRoute = matches.some(match => match.routeId === '/agents/$agentId');
+
+  const filteredAgents = useMemo(() => {
+    if (!agents) return [];
+    return agents.filter((agent) => {
+      const matchesSearch = !searchQuery ||
+        agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        agent.config?.model?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === "all" || agent.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [agents, searchQuery, statusFilter]);
 
   const handleAddAgent = async () => {
     await createAgent({
@@ -47,7 +70,6 @@ function AgentsPage() {
     setGatewayUrl("");
   };
 
-  // If we're on a child route, render the outlet instead of the agents list
   if (isOnChildRoute) {
     return <Outlet />;
   }
@@ -74,14 +96,21 @@ function AgentsPage() {
     );
   }
 
+  const statusCounts = {
+    all: agents.length,
+    online: agents.filter(a => a.status === "online").length,
+    offline: agents.filter(a => a.status === "offline").length,
+    degraded: agents.filter(a => a.status === "degraded").length,
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
-      {/* Header with Add Agent button */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Agent Manager</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Agents</h1>
           <p className="text-muted-foreground">
-            Monitor and manage your connected AI agents
+            {agents.length} agent{agents.length !== 1 ? "s" : ""} connected
           </p>
         </div>
 
@@ -96,7 +125,7 @@ function AgentsPage() {
             <DialogHeader>
               <DialogTitle>Add New Agent</DialogTitle>
               <DialogDescription>
-                Connect a new AI agent to ClawWatch for monitoring and management.
+                Connect a new AI agent to ClawWatch for monitoring.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -105,8 +134,8 @@ function AgentsPage() {
                 <Input
                   id="name"
                   value={agentName}
-                  onChange={(e) => setAgentName(e.target.value)}
-                  placeholder="Enter agent name..."
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setAgentName(e.target.value)}
+                  placeholder="e.g. mimizuku"
                 />
               </div>
               <div className="grid gap-2">
@@ -114,8 +143,8 @@ function AgentsPage() {
                 <Input
                   id="gateway"
                   value={gatewayUrl}
-                  onChange={(e) => setGatewayUrl(e.target.value)}
-                  placeholder="https://gateway.example.com"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setGatewayUrl(e.target.value)}
+                  placeholder="ws://127.0.0.1:18789"
                 />
               </div>
             </div>
@@ -126,7 +155,7 @@ function AgentsPage() {
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleAddAgent}
                 disabled={!agentName.trim() || !gatewayUrl.trim()}
               >
@@ -137,23 +166,56 @@ function AgentsPage() {
         </Dialog>
       </div>
 
+      {/* Search and filter bar */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search agents..."
+            value={searchQuery}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex items-center gap-1 rounded-lg border bg-muted/30 p-1">
+          {(["all", "online", "offline", "degraded"] as const).map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                statusFilter === status
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {status === "all" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
+              <span className="ml-1.5 text-muted-foreground">
+                {statusCounts[status]}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Agent grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {agents.map((agent) => (
-          <Link 
-            key={agent._id} 
-            to="/agents/$agentId" 
-            params={{ agentId: agent._id }}
-            className="block transition-all hover:scale-105"
-          >
-            <AgentStatusCard agentId={agent._id} />
-          </Link>
+        {filteredAgents.map((agent) => (
+          <AgentCard key={agent._id} agent={agent} />
         ))}
+        {filteredAgents.length === 0 && agents.length > 0 && (
+          <Card className="col-span-full">
+            <CardContent className="py-8 text-center">
+              <Search className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">No agents match your filters</p>
+            </CardContent>
+          </Card>
+        )}
         {agents.length === 0 && (
           <Card className="col-span-full">
             <CardContent className="py-12 text-center">
               <div className="mx-auto mb-4 h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                <div className="h-6 w-6 rounded-full border-2 border-dashed border-muted-foreground" />
+                <Bot className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-semibold">No agents connected</h3>
               <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
@@ -171,3 +233,90 @@ function AgentsPage() {
     </div>
   );
 }
+
+interface AgentData {
+  _id: string;
+  name: string;
+  status: string;
+  lastHeartbeat: number;
+  config?: { model?: string; channel?: string };
+}
+
+const AgentCard = memo(function AgentCard({ agent }: { agent: AgentData }) {
+  const health = useQuery(api.agents.healthSummary, {
+    agentId: agent._id as any,
+  });
+  const costSummary = useQuery(api.costs.summary, {
+    agentId: agent._id as any,
+  });
+
+  const costToday = useMemo(
+    () => formatCost(costSummary?.today.cost ?? 0),
+    [costSummary?.today.cost],
+  );
+
+  return (
+    <Link
+      to="/agents/$agentId"
+      params={{ agentId: agent._id }}
+      className="block group"
+    >
+      <Card className="transition-all hover:border-primary/30 hover:shadow-md group-hover:bg-muted/20">
+        <CardContent className="p-5 space-y-4">
+          {/* Header row */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Circle
+                className={cn(
+                  "h-2.5 w-2.5 shrink-0 fill-current",
+                  statusColor(agent.status),
+                )}
+              />
+              <span className="font-semibold truncate">{agent.name}</span>
+            </div>
+            <Badge
+              variant={agent.status === "online" ? "default" : agent.status === "degraded" ? "secondary" : "outline"}
+              className="shrink-0 text-xs"
+            >
+              {agent.status}
+            </Badge>
+          </div>
+
+          {/* Model badge */}
+          {agent.config?.model && (
+            <div>
+              <Badge variant="secondary" className="text-xs font-normal">
+                {agent.config.model}
+              </Badge>
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3 pt-1 border-t border-border/50">
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Today</p>
+                <p className="text-sm font-medium">{costToday}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Sessions</p>
+                <p className="text-sm font-medium">{health?.activeSessions ?? "–"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <div>
+                <p className="text-xs text-muted-foreground">Heartbeat</p>
+                <p className="text-sm font-medium">{timeAgo(agent.lastHeartbeat)}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+});

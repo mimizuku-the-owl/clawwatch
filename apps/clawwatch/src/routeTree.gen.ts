@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MonitoringRouteImport } from './routes/monitoring'
 import { Route as MetricsRouteImport } from './routes/metrics'
 import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AlertingRouteImport } from './routes/alerting'
 import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
@@ -36,6 +37,11 @@ const MetricsRoute = MetricsRouteImport.update({
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertingRoute = AlertingRouteImport.update({
+  id: '/alerting',
+  path: '/alerting',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentsRoute = AgentsRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/agents': typeof AgentsRouteWithChildren
+  '/alerting': typeof AlertingRoute
   '/alerts': typeof AlertsRoute
   '/metrics': typeof MetricsRoute
   '/monitoring': typeof MonitoringRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/agents': typeof AgentsRouteWithChildren
+  '/alerting': typeof AlertingRoute
   '/alerts': typeof AlertsRoute
   '/metrics': typeof MetricsRoute
   '/monitoring': typeof MonitoringRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/activity': typeof ActivityRoute
   '/agents': typeof AgentsRouteWithChildren
+  '/alerting': typeof AlertingRoute
   '/alerts': typeof AlertsRoute
   '/metrics': typeof MetricsRoute
   '/monitoring': typeof MonitoringRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/agents'
+    | '/alerting'
     | '/alerts'
     | '/metrics'
     | '/monitoring'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/agents'
+    | '/alerting'
     | '/alerts'
     | '/metrics'
     | '/monitoring'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/activity'
     | '/agents'
+    | '/alerting'
     | '/alerts'
     | '/metrics'
     | '/monitoring'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActivityRoute: typeof ActivityRoute
   AgentsRoute: typeof AgentsRouteWithChildren
+  AlertingRoute: typeof AlertingRoute
   AlertsRoute: typeof AlertsRoute
   MetricsRoute: typeof MetricsRoute
   MonitoringRoute: typeof MonitoringRoute
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerting': {
+      id: '/alerting'
+      path: '/alerting'
+      fullPath: '/alerting'
+      preLoaderRoute: typeof AlertingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agents': {
@@ -209,6 +229,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActivityRoute: ActivityRoute,
   AgentsRoute: AgentsRouteWithChildren,
+  AlertingRoute: AlertingRoute,
   AlertsRoute: AlertsRoute,
   MetricsRoute: MetricsRoute,
   MonitoringRoute: MonitoringRoute,

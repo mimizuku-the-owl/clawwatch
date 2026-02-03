@@ -1,3 +1,4 @@
+import { Badge } from "@clawwatch/ui/components/badge";
 import { Button } from "@clawwatch/ui/components/button";
 import {
   Card,
@@ -8,14 +9,21 @@ import {
   CardTitle,
 } from "@clawwatch/ui/components/card";
 import { Input } from "@clawwatch/ui/components/input";
-import { Separator } from "@clawwatch/ui/components/separator";
 import { cn } from "@clawwatch/ui/lib/utils";
 import { api } from "@convex/api";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
-import { Bell, DollarSign, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { formatCost } from "@/lib/utils";
+import {
+  Bell,
+  ExternalLink,
+  Plus,
+  Settings as SettingsIcon,
+  Trash2,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import type { ChangeEvent } from "react";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -23,42 +31,29 @@ export const Route = createFileRoute("/settings")({
 
 function SettingsPage() {
   const notificationChannels = useQuery(api.notifications.list);
-  const budgets = useQuery(api.budgets.list);
+  const agents = useQuery(api.agents.list, {});
 
-  const createBudget = useMutation(api.budgets.create);
-  const removeBudget = useMutation(api.budgets.remove);
   const createNotification = useMutation(api.notifications.create);
   const removeNotification = useMutation(api.notifications.remove);
 
-  const [showNewBudget, setShowNewBudget] = useState(false);
   const [showNewChannel, setShowNewChannel] = useState(false);
-
-  const [budgetName, setBudgetName] = useState("");
-  const [budgetLimit, setBudgetLimit] = useState("10");
-  const [budgetPeriod, setBudgetPeriod] = useState<
-    "hourly" | "daily" | "weekly" | "monthly"
-  >("daily");
-  const [budgetHardStop, setBudgetHardStop] = useState(false);
-
-  const [channelType, setChannelType] = useState<
-    "discord" | "email" | "webhook"
-  >("discord");
+  const [channelType, setChannelType] = useState<"discord" | "email" | "webhook">("discord");
   const [channelName, setChannelName] = useState("");
   const [channelWebhook, setChannelWebhook] = useState("");
   const [channelEmail, setChannelEmail] = useState("");
 
-  const handleCreateBudget = async () => {
-    if (!budgetName || !budgetLimit) return;
-    await createBudget({
-      name: budgetName,
-      limitDollars: parseFloat(budgetLimit),
-      period: budgetPeriod,
-      hardStop: budgetHardStop,
-    });
-    setBudgetName("");
-    setBudgetLimit("10");
-    setShowNewBudget(false);
-  };
+  // Determine connection health from agent data
+  const connectionStatus = useMemo(() => {
+    if (!agents) return "loading";
+    if (agents.length === 0) return "disconnected";
+    const onlineAgents = agents.filter((a) => a.status === "online");
+    if (onlineAgents.length === 0) return "offline";
+    // Consider connected if any agent had a heartbeat within last 5 minutes
+    const recentHeartbeat = agents.some(
+      (a) => Date.now() - a.lastHeartbeat < 5 * 60 * 1000,
+    );
+    return recentHeartbeat ? "connected" : "stale";
+  }, [agents]);
 
   const handleCreateChannel = async () => {
     if (!channelName) return;
@@ -77,115 +72,97 @@ function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6 max-w-4xl">
-      {/* Budgets */}
+    <div className="flex flex-1 flex-col gap-6 p-6 max-w-3xl">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground">
+          Manage your gateway connection and notification preferences
+        </p>
+      </div>
+
+      {/* Gateway Connection Status */}
       <Card>
         <CardHeader>
-          <CardTitle>Budgets</CardTitle>
-          <CardDescription>Set spending limits for your agents</CardDescription>
-          <CardAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowNewBudget(!showNewBudget)}
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Budget
-            </Button>
-          </CardAction>
+          <CardTitle className="flex items-center gap-2">
+            Gateway Connection
+            {connectionStatus === "connected" && (
+              <Badge variant="default" className="text-xs">Connected</Badge>
+            )}
+            {connectionStatus === "stale" && (
+              <Badge variant="secondary" className="text-xs">Stale</Badge>
+            )}
+            {(connectionStatus === "disconnected" || connectionStatus === "offline") && (
+              <Badge variant="destructive" className="text-xs">
+                {connectionStatus === "disconnected" ? "Not Connected" : "Offline"}
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Status of your Clawdbot gateway collector
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {showNewBudget && (
-            <div className="mb-4 space-y-3 rounded-lg border bg-muted/30 p-4">
-              <Input
-                placeholder="Budget name"
-                value={budgetName}
-                onChange={(e) => setBudgetName(e.target.value)}
-              />
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="mb-1 block text-xs text-muted-foreground">
-                    Limit ($)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={budgetLimit}
-                    onChange={(e) => setBudgetLimit(e.target.value)}
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="mb-1 block text-xs text-muted-foreground">
-                    Period
-                  </label>
-                  <select
-                    value={budgetPeriod}
-                    onChange={(e) =>
-                      setBudgetPeriod(e.target.value as typeof budgetPeriod)
-                    }
-                    className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="hourly">Hourly</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
+          {connectionStatus === "connected" ? (
+            <div className="flex items-center gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+              <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <Wifi className="h-5 w-5 text-emerald-400" />
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={budgetHardStop}
-                  onChange={(e) => setBudgetHardStop(e.target.checked)}
-                  className="rounded border-border"
-                />
-                Hard stop (pause agent when exceeded)
-              </label>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowNewBudget(false)}
-                >
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={handleCreateBudget}>
-                  Create
-                </Button>
+              <div>
+                <p className="text-sm font-medium text-emerald-400">
+                  Collector is connected and receiving data
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {agents?.filter((a) => a.status === "online").length ?? 0} agent(s)
+                  online · Data flowing normally
+                </p>
               </div>
             </div>
-          )}
-
-          {budgets && budgets.length > 0 ? (
-            <div className="space-y-2">
-              {budgets.map((budget) => (
-                <div
-                  key={budget._id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">{budget.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatCost(budget.limitDollars)} / {budget.period}
-                        {budget.hardStop && " · Hard stop"}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => removeBudget({ id: budget._id })}
-                    className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+          ) : connectionStatus === "stale" ? (
+            <div className="flex items-center gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                <Wifi className="h-5 w-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-amber-400">
+                  Connection may be stale
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  No heartbeat received in the last 5 minutes. The gateway might be
+                  experiencing issues.
+                </p>
+              </div>
             </div>
           ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              No budgets configured
-            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-4">
+                <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+                  <WifiOff className="h-5 w-5 text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-red-400">
+                    {connectionStatus === "disconnected"
+                      ? "No agents connected"
+                      : "All agents are offline"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Configure your Clawdbot gateway to start sending data to
+                    ClawWatch.
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-lg border bg-muted/30 p-4">
+                <p className="text-sm font-medium mb-2">Quick Setup</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Add these environment variables to your Clawdbot configuration:
+                </p>
+                <div className="rounded-md bg-background p-3 font-mono text-xs space-y-1">
+                  <p>
+                    <span className="text-muted-foreground">CONVEX_URL=</span>
+                    <span className="text-primary">http://100.115.177.85:3210</span>
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -216,7 +193,7 @@ function SettingsPage() {
                   </label>
                   <select
                     value={channelType}
-                    onChange={(e) =>
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
                       setChannelType(e.target.value as typeof channelType)
                     }
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm"
@@ -233,7 +210,7 @@ function SettingsPage() {
                   <Input
                     placeholder="e.g. #alerts"
                     value={channelName}
-                    onChange={(e) => setChannelName(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setChannelName(e.target.value)}
                   />
                 </div>
               </div>
@@ -242,7 +219,7 @@ function SettingsPage() {
                   type="url"
                   placeholder="Webhook URL"
                   value={channelWebhook}
-                  onChange={(e) => setChannelWebhook(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setChannelWebhook(e.target.value)}
                 />
               )}
               {channelType === "email" && (
@@ -250,7 +227,7 @@ function SettingsPage() {
                   type="email"
                   placeholder="Email address"
                   value={channelEmail}
-                  onChange={(e) => setChannelEmail(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setChannelEmail(e.target.value)}
                 />
               )}
               <div className="flex justify-end gap-2">
@@ -313,27 +290,33 @@ function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Gateway Connection */}
+      {/* Budget Management Link */}
       <Card>
         <CardHeader>
-          <CardTitle>Gateway Connection</CardTitle>
-          <CardDescription>Connect to your Clawdbot gateway</CardDescription>
+          <CardTitle>Budget & Alert Management</CardTitle>
+          <CardDescription>
+            Configure spending limits and alert thresholds
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">
-                Gateway URL
-              </label>
-              <Input placeholder="ws://127.0.0.1:18789" />
+          <div className="flex items-center gap-3 rounded-lg border p-4">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <SettingsIcon className="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">
-                Gateway Token
-              </label>
-              <Input type="password" placeholder="Your gateway token" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">
+                Budgets and alerts are now managed from the Alerting page
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Create budget alerts, error monitors, and more from one place.
+              </p>
             </div>
-            <Button>Connect</Button>
+            <Link to="/alerting">
+              <Button variant="outline" size="sm">
+                Go to Alerting
+                <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

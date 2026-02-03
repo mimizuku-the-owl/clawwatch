@@ -29,7 +29,7 @@ const mainItems: NavItem[] = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
   { title: "Agents", url: "/agents", icon: Bot },
   { title: "Monitoring", url: "/monitoring", icon: Activity },
-  { title: "Alerting", url: "/alerts", icon: Bell },
+  { title: "Alerting", url: "/alerting", icon: Bell },
 ];
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {

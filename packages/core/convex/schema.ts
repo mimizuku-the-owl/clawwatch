@@ -84,6 +84,8 @@ export default defineSchema({
       v.literal("budget_exceeded"),
       v.literal("agent_offline"),
       v.literal("error_spike"),
+      v.literal("cost_spike"),
+      v.literal("high_token_usage"),
       v.literal("session_loop"),
       v.literal("channel_disconnect"),
       v.literal("custom_threshold"),
@@ -95,7 +97,12 @@ export default defineSchema({
         v.union(v.literal("gt"), v.literal("lt"), v.literal("eq")),
       ),
       metric: v.optional(v.string()),
+      hardStop: v.optional(v.boolean()),
+      percentageThreshold: v.optional(v.number()),
     }),
+    severity: v.optional(
+      v.union(v.literal("info"), v.literal("warning"), v.literal("critical")),
+    ),
     channels: v.array(
       v.union(v.literal("discord"), v.literal("email"), v.literal("webhook")),
     ),
