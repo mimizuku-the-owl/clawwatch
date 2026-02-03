@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "codegen": "npx convex dev --once --typecheck=disable --until-success",
     "dev": "npx convex dev",
     "push": "npx convex push --typecheck disable",
     "deploy": "npx convex deploy --typecheck disable",

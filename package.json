@@ -5,8 +5,9 @@
   "private": true,
   "workspaces": ["apps/clawwatch", "packages/core", "tooling/typescript"],
   "scripts": {
-    "dev": "bun run --filter='clawwatch-app' dev",
-    "build": "bun run --filter='clawwatch-app' build",
+    "codegen": "bun run --filter='@clawwatch/core' codegen",
+    "dev": "bun run codegen && bun run --filter='clawwatch-app' dev",
+    "build": "bun run codegen && bun run --filter='clawwatch-app' build",
     "serve": "bun run --filter='@clawwatch/core' serve",
     "collector": "bun run --filter='@clawwatch/core' collector",
     "clean": "git clean -xdf node_modules dist",
