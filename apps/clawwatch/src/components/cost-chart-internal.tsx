@@ -22,13 +22,18 @@ interface Props {
 }
 
 const tooltipStyle = {
-  backgroundColor: "hsl(var(--card))",
-  border: "1px solid hsl(var(--border))",
+  backgroundColor: "oklch(0.16 0.008 285)",
+  border: "1px solid oklch(0.24 0.008 285)",
   borderRadius: "8px",
   fontSize: "12px",
+  padding: "8px 12px",
+  boxShadow: "0 8px 16px rgb(0 0 0 / 0.3)",
 } as const;
 
-const tooltipLabelStyle = { color: "hsl(var(--muted-foreground))" } as const;
+const tooltipLabelStyle = {
+  color: "oklch(0.55 0 0)",
+  fontSize: "11px",
+} as const;
 
 function tooltipFormatter(value: number | undefined, name: string | undefined) {
   if (name === "cost" && value !== undefined)
@@ -56,37 +61,41 @@ export const CostChartInternal = memo(function CostChartInternal({
   );
 
   return (
-    <div className="h-[300px] w-full min-h-[300px]">
+    <div className="h-[280px] w-full min-h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={formatted}
-          margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+          margin={{ top: 4, right: 4, left: -8, bottom: 0 }}
         >
           <defs>
             <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#a855f7" stopOpacity={0.5} />
-              <stop offset="95%" stopColor="#a855f7" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="#a855f7" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#a855f7" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="oklch(0.22 0.007 285)"
+            vertical={false}
+          />
           <XAxis
             dataKey="time"
-            className="text-muted-foreground"
-            tick={{ fill: "currentColor", fontSize: 11 }}
+            tick={{ fill: "oklch(0.45 0 0)", fontSize: 11 }}
             tickLine={false}
             axisLine={false}
           />
           <YAxis
-            className="text-muted-foreground"
-            tick={{ fill: "currentColor", fontSize: 11 }}
+            tick={{ fill: "oklch(0.45 0 0)", fontSize: 11 }}
             tickLine={false}
             axisLine={false}
             tickFormatter={yAxisFormatter}
+            width={52}
           />
           <Tooltip
             contentStyle={tooltipStyle}
             labelStyle={tooltipLabelStyle}
             formatter={tooltipFormatter}
+            cursor={{ stroke: "oklch(0.35 0.01 285)", strokeWidth: 1 }}
           />
           <Area
             type="monotone"
@@ -94,6 +103,8 @@ export const CostChartInternal = memo(function CostChartInternal({
             stroke="#a855f7"
             strokeWidth={2}
             fill="url(#costGradient)"
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </AreaChart>
       </ResponsiveContainer>

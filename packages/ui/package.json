@@ -20,7 +20,9 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@clawwatch/tsconfig": "workspace:*"
+    "@clawwatch/tsconfig": "workspace:*",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",

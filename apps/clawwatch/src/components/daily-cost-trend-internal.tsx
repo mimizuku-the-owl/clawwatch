@@ -54,9 +54,9 @@ export const DailyCostTrendInternal = memo(function DailyCostTrendInternal({
             axisLine={false}
             tickFormatter={(value) => {
               const date = new Date(value);
-              return date.toLocaleDateString([], { 
-                month: "short", 
-                day: "numeric" 
+              return date.toLocaleDateString([], {
+                month: "short",
+                day: "numeric",
               });
             }}
           />

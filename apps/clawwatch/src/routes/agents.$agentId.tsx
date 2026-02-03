@@ -55,21 +55,12 @@ import {
   Zap,
 } from "lucide-react";
 import type { ChangeEvent } from "react";
-import {
-  memo,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { CostChart } from "@/components/cost-chart";
 import { StatCard } from "@/components/stat-card";
 import { formatCost, formatTokens, statusColor, timeAgo } from "@/lib/utils";
-import {
-  listFiles,
-  readFileContents,
-  writeFileContents,
-} from "@/server/files";
+import { listFiles, readFileContents, writeFileContents } from "@/server/files";
+import type { Session } from "@/types";
 
 export const Route = createFileRoute("/agents/$agentId")({
   component: AgentDetailPage,
@@ -259,8 +250,7 @@ function FilesTab({
           setTree((prev) => updateTreeNode(prev, subPath, entries));
         }
       } catch (err: unknown) {
-        const msg =
-          err instanceof Error ? err.message : "Failed to load files";
+        const msg = err instanceof Error ? err.message : "Failed to load files";
         if (!subPath) setTreeError(msg);
       } finally {
         if (!subPath) setTreeLoading(false);
@@ -361,8 +351,7 @@ function FilesTab({
         setFileContent(result.content);
         setFileMeta({ size: result.size, modified: result.modified });
       } catch (err: unknown) {
-        const msg =
-          err instanceof Error ? err.message : "Failed to read file";
+        const msg = err instanceof Error ? err.message : "Failed to read file";
         setFileError(msg);
         setFileContent(null);
         setFileMeta(null);
@@ -463,10 +452,7 @@ function FilesTab({
               title="Refresh"
             >
               <Loader2
-                className={cn(
-                  "h-3.5 w-3.5",
-                  treeLoading && "animate-spin",
-                )}
+                className={cn("h-3.5 w-3.5", treeLoading && "animate-spin")}
               />
             </Button>
           </div>
@@ -642,10 +628,7 @@ function MarkdownRenderer({
 
         if (inCodeBlock) {
           return (
-            <div
-              key={i}
-              className="bg-muted/40 px-2 -mx-2 text-emerald-400/80"
-            >
+            <div key={i} className="bg-muted/40 px-2 -mx-2 text-emerald-400/80">
               {line || "\u00A0"}
             </div>
           );
@@ -857,22 +840,20 @@ function AgentDetailPage() {
   // Derive unique kinds/channels for filters
   const sessionKinds = useMemo(() => {
     if (!sessions) return [];
-    const kinds = new Set(sessions.map((s) => s.kind));
+    const kinds = new Set(sessions.map((s: Session) => s.kind));
     return Array.from(kinds).sort();
   }, [sessions]);
 
   // Filtered + sorted sessions
   const filteredSessions = useMemo(() => {
     if (!sessions) return undefined;
-    let result = sessions.filter((session) => {
+    let result = sessions.filter((session: Session) => {
       const matchesSearch =
         !sessionSearch ||
         session.sessionKey
           .toLowerCase()
           .includes(sessionSearch.toLowerCase()) ||
-        session.channel
-          ?.toLowerCase()
-          .includes(sessionSearch.toLowerCase()) ||
+        session.channel?.toLowerCase().includes(sessionSearch.toLowerCase()) ||
         session.kind.toLowerCase().includes(sessionSearch.toLowerCase());
       const matchesKind = kindFilter === "all" || session.kind === kindFilter;
       const matchesStatus =
@@ -1012,9 +993,7 @@ function AgentDetailPage() {
                 <AlertTriangle
                   className={cn(
                     "h-5 w-5",
-                    errorCount > 0
-                      ? "text-red-400"
-                      : "text-muted-foreground",
+                    errorCount > 0 ? "text-red-400" : "text-muted-foreground",
                   )}
                 />
               }
@@ -1101,10 +1080,7 @@ function AgentDetailPage() {
           </div>
 
           {/* Configuration card */}
-          <ConfigurationCard
-            agentId={agentId as Id<"agents">}
-            agent={agent}
-          />
+          <ConfigurationCard agentId={agentId as Id<"agents">} agent={agent} />
         </TabsContent>
 
         {/* ─── SESSIONS TAB ─── */}
@@ -1133,8 +1109,8 @@ function AgentDetailPage() {
             >
               <option value="all">All kinds</option>
               {sessionKinds.map((kind) => (
-                <option key={kind} value={kind}>
-                  {kind}
+                <option key={kind as string} value={kind as string}>
+                  {String(kind)}
                 </option>
               ))}
             </select>
@@ -1152,9 +1128,7 @@ function AgentDetailPage() {
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {s === "all"
-                    ? "All"
-                    : s.charAt(0).toUpperCase() + s.slice(1)}
+                  {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
                 </button>
               ))}
             </div>
@@ -1245,7 +1219,7 @@ function AgentDetailPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredSessions.map((session) => (
+                    filteredSessions.map((session: Session) => (
                       <SessionRow
                         key={session._id}
                         session={session}
@@ -1337,9 +1311,7 @@ const SessionRow = memo(function SessionRow({
           </Badge>
         </TableCell>
         <TableCell className="text-sm">{session.channel || "—"}</TableCell>
-        <TableCell className="text-sm">
-          {timeAgo(session.startedAt)}
-        </TableCell>
+        <TableCell className="text-sm">{timeAgo(session.startedAt)}</TableCell>
         <TableCell className="text-sm">
           {timeAgo(session.lastActivity)}
         </TableCell>

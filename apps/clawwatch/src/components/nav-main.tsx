@@ -28,7 +28,9 @@ export function NavMain({ items }: NavMainProps) {
                     ? currentPath === "/"
                     : currentPath.startsWith(item.url)
                 }
-                render={(props) => <Link {...props} to={item.url} />}
+                render={({ ref: _ref, ...props }) => (
+                  <Link {...props} to={item.url} />
+                )}
               >
                 <item.icon />
                 <span>{item.title}</span>

@@ -91,8 +91,7 @@ export const setDefaultPaths = mutation({
     };
     for (const agent of agents) {
       if (!agent.workspacePath) {
-        const path =
-          defaults[agent.name] ?? `/home/moltbot/${agent.name}`;
+        const path = defaults[agent.name] ?? `/home/moltbot/${agent.name}`;
         await ctx.db.patch(agent._id, { workspacePath: path });
       }
     }

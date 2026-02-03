@@ -3,8 +3,8 @@ import { Button } from "@clawwatch/ui/components/button";
 import { Filter, X } from "lucide-react";
 import { memo } from "react";
 import {
-  TimeRangeSelector,
   type TimeRange,
+  TimeRangeSelector,
 } from "@/components/time-range-selector";
 
 interface MonitoringFiltersProps {
@@ -66,9 +66,7 @@ export const MonitoringFilters = memo(function MonitoringFilters({
           {availableModels.map((model) => (
             <Badge
               key={model}
-              variant={
-                selectedModels.includes(model) ? "default" : "outline"
-              }
+              variant={selectedModels.includes(model) ? "default" : "outline"}
               className="cursor-pointer text-xs"
               onClick={() => toggleModel(model)}
             >

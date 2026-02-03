@@ -40,12 +40,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" className="pointer-events-none">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
-                <img src="/clawwatch-owl.svg" alt="ClawWatch" className="h-8 w-8" />
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10">
+                <img
+                  src="/clawwatch-owl.svg"
+                  alt="ClawWatch"
+                  className="h-4.5 w-4.5"
+                />
               </div>
-              <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">ClawWatch</span>
-                <span className="text-xs text-muted-foreground">
+              <div className="flex flex-col gap-0 leading-none">
+                <span className="text-sm font-semibold tracking-tight">
+                  ClawWatch
+                </span>
+                <span className="text-[11px] text-muted-foreground">
                   Agent Monitoring
                 </span>
               </div>
@@ -61,11 +67,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="sm">
-              <Link to="/settings">
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-              </Link>
+            <SidebarMenuButton
+              size="sm"
+              render={({ ref: _ref, ...props }) => (
+                <Link {...props} to="/settings" />
+              )}
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

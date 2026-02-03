@@ -1,4 +1,3 @@
-import { memo } from "react";
 import {
   Table,
   TableBody,
@@ -7,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@clawwatch/ui/components/table";
+import { memo } from "react";
 import { formatCost, formatTokens, timeAgo } from "@/lib/utils";
 
 export interface SessionData {
@@ -57,9 +57,7 @@ export const TopSessionsTable = memo(function TopSessionsTable({
               <TableCell className="font-mono text-xs">
                 {truncateSessionKey(session.sessionKey)}
               </TableCell>
-              <TableCell className="text-xs">
-                {session.agentName}
-              </TableCell>
+              <TableCell className="text-xs">{session.agentName}</TableCell>
               <TableCell className="text-right font-mono text-xs">
                 {formatCost(session.cost)}
               </TableCell>

@@ -8,23 +8,19 @@ export const Route = createFileRoute("/events")({
 
 function EventsPage() {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <Radio className="h-4.5 w-4.5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Events</h1>
-            <p className="text-sm text-muted-foreground">
-              Real-time activity feed across all agents
-            </p>
-          </div>
+    <div className="flex flex-1 flex-col gap-5 p-5">
+      <div className="flex items-center gap-2.5 animate-fade-in">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+          <Radio className="h-4 w-4 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">Events</h1>
+          <p className="text-xs text-muted-foreground">
+            Real-time activity feed across all agents
+          </p>
         </div>
       </div>
 
-      {/* Event log */}
       <EventLog showAgentColumn limit={500} />
     </div>
   );

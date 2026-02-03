@@ -1,6 +1,6 @@
 import { lazy, memo, Suspense } from "react";
-import { ClientOnly } from "./client-only";
 import type { AgentGraphProps } from "./agent-graph-internal";
+import { ClientOnly } from "./client-only";
 
 const AgentGraphInternal = lazy(() =>
   import("./agent-graph-internal").then((m) => ({

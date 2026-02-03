@@ -3,25 +3,20 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  type Edge,
   Handle,
   MiniMap,
-  Position,
-  ReactFlow,
-  useNodesState,
-  useEdgesState,
-  type Edge,
   type Node,
   type NodeProps,
+  Position,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import {
-  Activity,
-  Circle,
-  MessageSquare,
-  Smartphone,
-} from "lucide-react";
-import { memo, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { Activity, Circle, MessageSquare, Smartphone } from "lucide-react";
+import { memo, useMemo } from "react";
 import { formatCost, statusColor } from "@/lib/utils";
 
 // ── Types ──
@@ -62,7 +57,9 @@ type AgentNodeData = {
   cost?: CostData;
 };
 
-const AgentNode = memo(function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
+const AgentNode = memo(function AgentNode({
+  data,
+}: NodeProps<Node<AgentNodeData>>) {
   const navigate = useNavigate();
   const { agent, health, cost } = data;
   const costToday = formatCost(cost?.today.cost ?? 0);
@@ -113,7 +110,10 @@ const AgentNode = memo(function AgentNode({ data }: NodeProps<Node<AgentNodeData
         <div className="px-4 py-2.5 flex flex-wrap gap-x-3 gap-y-1.5">
           {channels.length > 0 &&
             channels.map((ch) => (
-              <div key={ch} className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <div
+                key={ch}
+                className="flex items-center gap-1 text-[11px] text-muted-foreground"
+              >
                 <Smartphone className="h-3 w-3" />
                 <span>{ch}</span>
               </div>

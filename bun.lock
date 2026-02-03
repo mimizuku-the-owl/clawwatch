@@ -82,6 +82,8 @@
       },
       "devDependencies": {
         "@clawwatch/tsconfig": "workspace:*",
+        "@types/react": "^19.2.10",
+        "@types/react-dom": "^19.2.3",
       },
       "peerDependencies": {
         "react": "^18 || ^19",

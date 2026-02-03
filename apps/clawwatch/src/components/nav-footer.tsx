@@ -25,20 +25,16 @@ export function NavFooter() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton size="sm" onClick={toggleTheme}>
-          <ThemeIcon className="h-4 w-4" />
+          <ThemeIcon className="h-3.5 w-3.5" />
           <span className="text-xs text-muted-foreground">
-            {theme === "dark"
-              ? "Dark mode"
-              : theme === "light"
-                ? "Light mode"
-                : "System"}
+            {theme === "dark" ? "Dark" : theme === "light" ? "Light" : "System"}
           </span>
         </SidebarMenuButton>
       </SidebarMenuItem>
       <SidebarMenuItem>
-        <div className="px-2 py-1.5">
-          <span className="text-[10px] text-muted-foreground/50">
-            ClawWatch v0.1.0
+        <div className="px-2 py-1">
+          <span className="text-[10px] font-mono text-muted-foreground/40">
+            v0.1.0
           </span>
         </div>
       </SidebarMenuItem>

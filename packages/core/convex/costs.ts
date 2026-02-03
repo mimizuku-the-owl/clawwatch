@@ -195,8 +195,7 @@ export const modelBreakdown = query({
       .map(([model, data]) => ({
         model,
         ...data,
-        avgCostPerRequest:
-          data.requests > 0 ? data.cost / data.requests : 0,
+        avgCostPerRequest: data.requests > 0 ? data.cost / data.requests : 0,
         costPer1KTokens:
           data.inputTokens + data.outputTokens > 0
             ? (data.cost / (data.inputTokens + data.outputTokens)) * 1000
@@ -261,9 +260,7 @@ export const topSessions = query({
         ...data,
       });
     }
-    return results
-      .sort((a, b) => b.cost - a.cost)
-      .slice(0, args.limit ?? 10);
+    return results.sort((a, b) => b.cost - a.cost).slice(0, args.limit ?? 10);
   },
 });
 

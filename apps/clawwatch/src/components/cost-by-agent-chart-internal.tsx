@@ -47,47 +47,47 @@ function tooltipFormatter(value: number | undefined) {
   return [0, "Cost"];
 }
 
-export const CostByAgentChartInternal = memo(
-  function CostByAgentChartInternal({ data }: Props) {
-    const dataWithColors = data.map((item, i) => ({
-      ...item,
-      fill: AGENT_COLORS[i % AGENT_COLORS.length],
-    }));
+export const CostByAgentChartInternal = memo(function CostByAgentChartInternal({
+  data,
+}: Props) {
+  const dataWithColors = data.map((item, i) => ({
+    ...item,
+    fill: AGENT_COLORS[i % AGENT_COLORS.length],
+  }));
 
-    return (
-      <div className="h-[250px] w-full min-h-[250px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={dataWithColors}
-            layout="vertical"
-            margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
-          >
-            <XAxis
-              type="number"
-              className="text-muted-foreground"
-              tick={{ fill: "currentColor", fontSize: 11 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={formatCost}
-            />
-            <YAxis
-              type="category"
-              dataKey="agentName"
-              className="text-muted-foreground"
-              tick={{ fill: "currentColor", fontSize: 11 }}
-              tickLine={false}
-              axisLine={false}
-              width={80}
-            />
-            <Tooltip
-              contentStyle={tooltipStyle}
-              labelStyle={tooltipLabelStyle}
-              formatter={tooltipFormatter}
-            />
-            <Bar dataKey="cost" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    );
-  },
-);
+  return (
+    <div className="h-[250px] w-full min-h-[250px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={dataWithColors}
+          layout="vertical"
+          margin={{ top: 4, right: 16, left: 4, bottom: 4 }}
+        >
+          <XAxis
+            type="number"
+            className="text-muted-foreground"
+            tick={{ fill: "currentColor", fontSize: 11 }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={formatCost}
+          />
+          <YAxis
+            type="category"
+            dataKey="agentName"
+            className="text-muted-foreground"
+            tick={{ fill: "currentColor", fontSize: 11 }}
+            tickLine={false}
+            axisLine={false}
+            width={80}
+          />
+          <Tooltip
+            contentStyle={tooltipStyle}
+            labelStyle={tooltipLabelStyle}
+            formatter={tooltipFormatter}
+          />
+          <Bar dataKey="cost" radius={[0, 4, 4, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+});

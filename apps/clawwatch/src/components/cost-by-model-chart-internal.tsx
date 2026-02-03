@@ -51,27 +51,30 @@ export const CostByModelChartInternal = memo(function CostByModelChartInternal({
 }: Props) {
   const processedData = useMemo(() => {
     // Group data by timestamp and aggregate by model
-    const grouped = data.reduce((acc, item) => {
-      const timeKey = item.timestamp;
-      const time = new Date(timeKey).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      
-      if (!acc[timeKey]) {
-        acc[timeKey] = { timestamp: timeKey, time };
-      }
-      
-      acc[timeKey][item.model] = (acc[timeKey][item.model] || 0) + item.cost;
-      
-      return acc;
-    }, {} as Record<number, any>);
+    const grouped = data.reduce(
+      (acc, item) => {
+        const timeKey = item.timestamp;
+        const time = new Date(timeKey).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        if (!acc[timeKey]) {
+          acc[timeKey] = { timestamp: timeKey, time };
+        }
+
+        acc[timeKey][item.model] = (acc[timeKey][item.model] || 0) + item.cost;
+
+        return acc;
+      },
+      {} as Record<number, any>,
+    );
 
     return Object.values(grouped).sort((a, b) => a.timestamp - b.timestamp);
   }, [data]);
 
   const models = useMemo(() => {
-    const modelSet = new Set(data.map(d => d.model));
+    const modelSet = new Set(data.map((d) => d.model));
     return Array.from(modelSet).sort();
   }, [data]);
 
@@ -84,9 +87,24 @@ export const CostByModelChartInternal = memo(function CostByModelChartInternal({
         >
           <defs>
             {models.map((model) => (
-              <linearGradient key={`gradient-${model}`} id={`gradient-${model}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={getModelColor(model)} stopOpacity={0.5} />
-                <stop offset="95%" stopColor={getModelColor(model)} stopOpacity={0.05} />
+              <linearGradient
+                key={`gradient-${model}`}
+                id={`gradient-${model}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="5%"
+                  stopColor={getModelColor(model)}
+                  stopOpacity={0.5}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={getModelColor(model)}
+                  stopOpacity={0.05}
+                />
               </linearGradient>
             ))}
           </defs>

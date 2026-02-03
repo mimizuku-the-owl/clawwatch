@@ -42,6 +42,7 @@ import {
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatCost, severityColor, timeAgo } from "@/lib/utils";
+import type { Alert, AlertRule } from "@/types";
 
 export const Route = createFileRoute("/alerting")({
   component: AlertingPage,
@@ -50,11 +51,36 @@ export const Route = createFileRoute("/alerting")({
 // ─── Constants ───
 
 const ALERT_TYPES = [
-  { value: "budget_exceeded", label: "Budget Exceeded", icon: DollarSign, description: "Threshold in $, per agent or global" },
-  { value: "agent_offline", label: "Agent Offline", icon: Wifi, description: "Agent heartbeat missed for X minutes" },
-  { value: "error_spike", label: "Error Spike", icon: AlertTriangle, description: "Error count exceeds threshold in time window" },
-  { value: "cost_spike", label: "Cost Spike", icon: TrendingUp, description: "Cost exceeds X% of daily average" },
-  { value: "high_token_usage", label: "High Token Usage", icon: Zap, description: "Token usage exceeds threshold" },
+  {
+    value: "budget_exceeded",
+    label: "Budget Exceeded",
+    icon: DollarSign,
+    description: "Threshold in $, per agent or global",
+  },
+  {
+    value: "agent_offline",
+    label: "Agent Offline",
+    icon: Wifi,
+    description: "Agent heartbeat missed for X minutes",
+  },
+  {
+    value: "error_spike",
+    label: "Error Spike",
+    icon: AlertTriangle,
+    description: "Error count exceeds threshold in time window",
+  },
+  {
+    value: "cost_spike",
+    label: "Cost Spike",
+    icon: TrendingUp,
+    description: "Cost exceeds X% of daily average",
+  },
+  {
+    value: "high_token_usage",
+    label: "High Token Usage",
+    icon: Zap,
+    description: "Token usage exceeds threshold",
+  },
 ] as const;
 
 const TYPE_ICONS: Record<string, typeof Bell> = {
@@ -100,11 +126,14 @@ function AlertingPage() {
 
   // Smart suggestions computed from real data
   const suggestions = useMemo(() => {
-    const items: { icon: typeof Lightbulb; text: string; action?: string }[] = [];
+    const items: { icon: typeof Lightbulb; text: string; action?: string }[] =
+      [];
     if (!costSummary || !agents || !rules) return items;
 
     const dailyCost = costSummary.today.cost;
-    const hasBudgetRule = rules.some((r) => r.type === "budget_exceeded");
+    const hasBudgetRule = rules.some(
+      (r: AlertRule) => r.type === "budget_exceeded",
+    );
     if (dailyCost > 0 && !hasBudgetRule) {
       const suggested = Math.ceil((dailyCost * 1.5) / 10) * 10;
       items.push({
@@ -114,7 +143,9 @@ function AlertingPage() {
       });
     }
 
-    const hasOfflineRule = rules.some((r) => r.type === "agent_offline");
+    const hasOfflineRule = rules.some(
+      (r: AlertRule) => r.type === "agent_offline",
+    );
     if (!hasOfflineRule && agents.length > 0) {
       items.push({
         icon: Wifi,
@@ -137,7 +168,7 @@ function AlertingPage() {
   // Filtered alerts
   const filteredAlerts = useMemo(() => {
     if (!alerts) return undefined;
-    return alerts.filter((alert) => {
+    return alerts.filter((alert: Alert) => {
       const matchesSeverity =
         severityFilter === "all" || alert.severity === severityFilter;
       const matchesResolved =
@@ -165,12 +196,12 @@ function AlertingPage() {
   }, [filteredAlerts]);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-5 p-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Alerting</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-lg font-semibold tracking-tight">Alerting</h1>
+          <p className="text-xs text-muted-foreground">
             Monitor thresholds and get notified when things go wrong
           </p>
         </div>
@@ -222,13 +253,15 @@ function AlertingPage() {
         <CardHeader>
           <CardTitle>Alert Rules</CardTitle>
           <CardDescription>
-            {rules ? `${rules.length} rule${rules.length !== 1 ? "s" : ""} configured` : "Loading..."}
+            {rules
+              ? `${rules.length} rule${rules.length !== 1 ? "s" : ""} configured`
+              : "Loading..."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {rules && rules.length > 0 ? (
             <div className="space-y-2">
-              {rules.map((rule) => {
+              {rules.map((rule: AlertRule) => {
                 const Icon = TYPE_ICONS[rule.type] ?? Bell;
                 return (
                   <div
@@ -242,21 +275,28 @@ function AlertingPage() {
                       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium truncate">{rule.name}</p>
+                          <p className="text-sm font-medium truncate">
+                            {rule.name}
+                          </p>
                           {rule.severity && (
-                            <span className={cn(
-                              "rounded px-1.5 py-0.5 text-xs font-medium",
-                              severityColor(rule.severity),
-                            )}>
+                            <span
+                              className={cn(
+                                "rounded px-1.5 py-0.5 text-xs font-medium",
+                                severityColor(rule.severity),
+                              )}
+                            >
                               {rule.severity}
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {rule.type.replace(/_/g, " ")} ·{" "}
-                          {rule.channels.join(", ")} · {rule.cooldownMinutes}min cooldown
-                          {rule.config?.threshold && ` · threshold: ${rule.config.threshold}`}
-                          {rule.config?.windowMinutes && ` · ${rule.config.windowMinutes}min window`}
+                          {rule.channels.join(", ")} · {rule.cooldownMinutes}min
+                          cooldown
+                          {rule.config?.threshold &&
+                            ` · threshold: ${rule.config.threshold}`}
+                          {rule.config?.windowMinutes &&
+                            ` · ${rule.config.windowMinutes}min window`}
                         </p>
                       </div>
                     </div>
@@ -289,14 +329,15 @@ function AlertingPage() {
             <div className="py-8 text-center text-muted-foreground">
               <Bell className="mx-auto mb-2 h-8 w-8 opacity-50" />
               <p className="text-sm">No alert rules configured</p>
-              <p className="mt-1 text-xs">
-                Default rules are being created...
-              </p>
+              <p className="mt-1 text-xs">Default rules are being created...</p>
             </div>
           ) : (
             <div className="space-y-2">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-14 bg-muted rounded-lg animate-pulse" />
+                <div
+                  key={i}
+                  className="h-14 bg-muted rounded-lg animate-pulse"
+                />
               ))}
             </div>
           )}
@@ -308,13 +349,17 @@ function AlertingPage() {
         <CardHeader>
           <CardTitle>Alert History</CardTitle>
           <CardDescription>
-            {filteredAlerts ? `${filteredAlerts.length} alert${filteredAlerts.length !== 1 ? "s" : ""}` : "Loading..."}
+            {filteredAlerts
+              ? `${filteredAlerts.length} alert${filteredAlerts.length !== 1 ? "s" : ""}`
+              : "Loading..."}
           </CardDescription>
           <CardAction>
             <div className="flex items-center gap-2">
               <select
                 value={severityFilter}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setSeverityFilter(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  setSeverityFilter(e.target.value)
+                }
                 className="rounded-md border bg-background px-2 py-1 text-xs"
               >
                 <option value="all">All severity</option>
@@ -324,7 +369,9 @@ function AlertingPage() {
               </select>
               <select
                 value={resolvedFilter}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setResolvedFilter(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  setResolvedFilter(e.target.value)
+                }
                 className="rounded-md border bg-background px-2 py-1 text-xs"
               >
                 <option value="all">All status</option>
@@ -343,7 +390,7 @@ function AlertingPage() {
                     {date}
                   </p>
                   <div className="space-y-2">
-                    {dateAlerts.map((alert) => (
+                    {dateAlerts.map((alert: Alert) => (
                       <div
                         key={alert._id}
                         className={cn(
@@ -378,9 +425,7 @@ function AlertingPage() {
                           <div className="flex shrink-0 items-center gap-1">
                             {!alert.acknowledgedAt && (
                               <button
-                                onClick={() =>
-                                  acknowledge({ id: alert._id })
-                                }
+                                onClick={() => acknowledge({ id: alert._id })}
                                 className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                                 title="Acknowledge"
                               >
@@ -411,7 +456,10 @@ function AlertingPage() {
           ) : (
             <div className="space-y-2">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
+                <div
+                  key={i}
+                  className="h-16 bg-muted rounded-lg animate-pulse"
+                />
               ))}
             </div>
           )}
@@ -439,19 +487,20 @@ function CreateAlertRuleDialog({
   const [threshold, setThreshold] = useState("100");
   const [windowMinutes, setWindowMinutes] = useState("15");
   const [cooldownMinutes, setCooldownMinutes] = useState("30");
-  const [severity, setSeverity] = useState<"info" | "warning" | "critical">("warning");
-  const [selectedChannels, setSelectedChannels] = useState<string[]>(["discord"]);
+  const [severity, setSeverity] = useState<"info" | "warning" | "critical">(
+    "warning",
+  );
+  const [selectedChannels, setSelectedChannels] = useState<string[]>([
+    "discord",
+  ]);
   const [hardStop, setHardStop] = useState(false);
   const [percentageThreshold, setPercentageThreshold] = useState("50");
 
-  const toggleChannel = useCallback(
-    (ch: string) => {
-      setSelectedChannels((prev) =>
-        prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
-      );
-    },
-    [],
-  );
+  const toggleChannel = useCallback((ch: string) => {
+    setSelectedChannels((prev) =>
+      prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
+    );
+  }, []);
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
@@ -502,7 +551,9 @@ function CreateAlertRuleDialog({
           <Input
             id="rule-name"
             value={name}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setName(e.target.value)
+            }
             placeholder="e.g. Daily Budget Warning"
           />
         </div>
@@ -542,7 +593,9 @@ function CreateAlertRuleDialog({
           <Label>Agent Scope</Label>
           <select
             value={agentScope}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => setAgentScope(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setAgentScope(e.target.value)
+            }
             className="rounded-md border bg-background px-3 py-2 text-sm"
           >
             <option value="all">All agents</option>
@@ -555,17 +608,24 @@ function CreateAlertRuleDialog({
         </div>
 
         {/* Type-specific config */}
-        {(type === "budget_exceeded" || type === "error_spike" || type === "high_token_usage") && (
+        {(type === "budget_exceeded" ||
+          type === "error_spike" ||
+          type === "high_token_usage") && (
           <div className="grid gap-2">
             <Label>
-              {type === "budget_exceeded" ? "Budget Threshold ($)" :
-               type === "high_token_usage" ? "Token Threshold" : "Error Count Threshold"}
+              {type === "budget_exceeded"
+                ? "Budget Threshold ($)"
+                : type === "high_token_usage"
+                  ? "Token Threshold"
+                  : "Error Count Threshold"}
             </Label>
             <Input
               type="number"
               step={type === "budget_exceeded" ? "1" : "1"}
               value={threshold}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setThreshold(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setThreshold(e.target.value)
+              }
             />
           </div>
         )}
@@ -576,18 +636,24 @@ function CreateAlertRuleDialog({
             <Input
               type="number"
               value={percentageThreshold}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPercentageThreshold(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setPercentageThreshold(e.target.value)
+              }
             />
           </div>
         )}
 
-        {(type === "agent_offline" || type === "error_spike" || type === "cost_spike") && (
+        {(type === "agent_offline" ||
+          type === "error_spike" ||
+          type === "cost_spike") && (
           <div className="grid gap-2">
             <Label>Time Window (minutes)</Label>
             <Input
               type="number"
               value={windowMinutes}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setWindowMinutes(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setWindowMinutes(e.target.value)
+              }
             />
           </div>
         )}
@@ -656,7 +722,9 @@ function CreateAlertRuleDialog({
           <Input
             type="number"
             value={cooldownMinutes}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setCooldownMinutes(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setCooldownMinutes(e.target.value)
+            }
           />
         </div>
       </div>

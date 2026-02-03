@@ -8,9 +8,9 @@ import { api } from "@convex/api";
 import { useQuery } from "convex/react";
 import { memo, useMemo } from "react";
 import { formatTokens } from "@/lib/utils";
+import type { CostRecord } from "@/types";
 
 export const TopModels = memo(function TopModels() {
-  // Stable time range — rounded to nearest hour to prevent re-render loops
   const timeRange = useMemo(() => {
     const now = Math.floor(Date.now() / 3600000) * 3600000;
     return {
@@ -24,18 +24,19 @@ export const TopModels = memo(function TopModels() {
   const modelData = useMemo(() => {
     if (!costRecords) return null;
 
-    // Group by model and sum tokens
     const modelMap = new Map<string, { tokens: number; cost: number }>();
-    
-    costRecords.forEach((record) => {
+
+    costRecords.forEach((record: CostRecord) => {
       const existing = modelMap.get(record.model) ?? { tokens: 0, cost: 0 };
       modelMap.set(record.model, {
-        tokens: existing.tokens + (record.inputTokens ?? 0) + (record.outputTokens ?? 0),
+        tokens:
+          existing.tokens +
+          (record.inputTokens ?? 0) +
+          (record.outputTokens ?? 0),
         cost: existing.cost + record.cost,
       });
     });
 
-    // Convert to array and sort by token usage
     const models = Array.from(modelMap.entries())
       .map(([name, data]) => ({
         name,
@@ -43,9 +44,8 @@ export const TopModels = memo(function TopModels() {
         cost: data.cost,
       }))
       .sort((a, b) => b.tokens - a.tokens)
-      .slice(0, 5); // Top 5
+      .slice(0, 5);
 
-    // Calculate max tokens for percentage calculation
     const maxTokens = models[0]?.tokens ?? 0;
 
     return models.map((model) => ({
@@ -56,19 +56,19 @@ export const TopModels = memo(function TopModels() {
 
   if (!modelData) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Top Models</CardTitle>
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Top Models</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="animate-pulse space-y-3">
+          <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="space-y-2">
+              <div key={i} className="space-y-1.5">
                 <div className="flex justify-between">
-                  <div className="h-4 bg-muted rounded w-24" />
-                  <div className="h-4 bg-muted rounded w-12" />
+                  <div className="h-3.5 bg-muted rounded w-24 shimmer" />
+                  <div className="h-3.5 bg-muted rounded w-10 shimmer" />
                 </div>
-                <div className="h-2 bg-muted rounded" />
+                <div className="h-1.5 bg-muted rounded-full shimmer" />
               </div>
             ))}
           </div>
@@ -78,29 +78,33 @@ export const TopModels = memo(function TopModels() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Top Models</CardTitle>
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium">Top Models</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {modelData.length === 0 ? (
-          <div className="text-center py-4 text-muted-foreground text-sm">
-            No model usage data available
+          <div className="flex flex-col items-center justify-center py-6 text-muted-foreground/60">
+            <p className="text-xs">No model usage data</p>
           </div>
         ) : (
-          modelData.map((model) => (
-            <div key={model.name} className="space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-sm font-medium truncate flex-1 mr-2">
+          modelData.map((model, i) => (
+            <div
+              key={model.name}
+              className="space-y-1 animate-fade-in"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <div className="flex justify-between items-baseline gap-2">
+                <span className="text-[13px] font-medium truncate flex-1">
                   {model.name}
                 </span>
-                <span className="text-sm font-mono text-muted-foreground">
+                <span className="text-[11px] font-mono tabular-nums text-muted-foreground shrink-0">
                   {formatTokens(model.tokens)}
                 </span>
               </div>
-              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+              <div className="relative h-1.5 bg-muted/80 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-primary/90 to-primary/50 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${model.percentage}%` }}
                 />
               </div>

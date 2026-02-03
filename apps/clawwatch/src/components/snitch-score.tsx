@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { memo, useMemo } from "react";
 import { timeAgo } from "@/lib/utils";
+import type { SnitchEvent } from "@/types";
 
 const TYPE_ICONS: Record<string, typeof Eye> = {
   alert_fired: AlertTriangle,
@@ -151,7 +152,7 @@ export const SnitchScore = memo(function SnitchScore({ agentId }: Props) {
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Recent Snitching
             </p>
-            {score.recentSnitches.map((snitch, i) => (
+            {score.recentSnitches.map((snitch: SnitchEvent, i: number) => (
               <div
                 key={i}
                 className="flex items-center gap-2 text-xs text-muted-foreground"
@@ -202,32 +203,42 @@ export const SnitchLeaderboard = memo(function SnitchLeaderboard() {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {leaderboard.map((entry, i) => (
-            <div
-              key={entry.agentId}
-              className="flex items-center justify-between rounded-lg p-2 hover:bg-muted/50"
-            >
-              <div className="flex items-center gap-3">
-                <span className="w-6 text-center text-lg">
-                  {i < 3 ? medals[i] : `${i + 1}.`}
-                </span>
-                <span className="text-sm font-medium">{entry.agentName}</span>
+          {leaderboard.map(
+            (
+              entry: {
+                agentId: string;
+                agentName: string;
+                totalSnitches: number;
+                score: number;
+              },
+              i: number,
+            ) => (
+              <div
+                key={entry.agentId}
+                className="flex items-center justify-between rounded-lg p-2 hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-6 text-center text-lg">
+                    {i < 3 ? medals[i] : `${i + 1}.`}
+                  </span>
+                  <span className="text-sm font-medium">{entry.agentName}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {entry.totalSnitches} events
+                  </span>
+                  <span
+                    className={cn(
+                      "tabular-nums text-sm font-bold",
+                      scoreStyles(entry.score).color,
+                    )}
+                  >
+                    {entry.score}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">
-                  {entry.totalSnitches} events
-                </span>
-                <span
-                  className={cn(
-                    "tabular-nums text-sm font-bold",
-                    scoreStyles(entry.score).color,
-                  )}
-                >
-                  {entry.score}
-                </span>
-              </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       </CardContent>
     </Card>

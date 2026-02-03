@@ -168,201 +168,207 @@ export function MetricWidget({
               Loading...
             </div>
           ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            {multiLine ? (
-              <LineChart
-                data={formatted}
-                margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  className="stroke-border"
-                />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fill: "currentColor", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                  className="text-muted-foreground"
-                />
-                <YAxis
-                  tick={{ fill: "currentColor", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v: number) => `${v.toLocaleString()}${unit}`}
-                  className="text-muted-foreground"
-                />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  formatter={(
-                    value: number | undefined,
-                    name: string | undefined,
-                  ) => [`${(value ?? 0).toLocaleString()}${unit}`, name]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="primary"
-                  stroke={color}
-                  strokeWidth={2}
-                  dot={false}
-                  name="P50"
-                />
-                {multiLine.map((line) => (
+            <ResponsiveContainer width="100%" height="100%">
+              {multiLine ? (
+                <LineChart
+                  data={formatted}
+                  margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fill: "currentColor", fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    className="text-muted-foreground"
+                  />
+                  <YAxis
+                    tick={{ fill: "currentColor", fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v: number) =>
+                      `${v.toLocaleString()}${unit}`
+                    }
+                    className="text-muted-foreground"
+                  />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(
+                      value: number | undefined,
+                      name: string | undefined,
+                    ) => [`${(value ?? 0).toLocaleString()}${unit}`, name]}
+                  />
                   <Line
-                    key={line.label}
                     type="monotone"
-                    dataKey={line.label}
-                    stroke={line.color}
-                    strokeWidth={1.5}
+                    dataKey="primary"
+                    stroke={color}
+                    strokeWidth={2}
                     dot={false}
-                    strokeDasharray={line.label === "P99" ? "4 2" : undefined}
-                    name={line.label}
+                    name="P50"
                   />
-                ))}
-                {alarm && (
-                  <ReferenceLine
-                    y={alarm.value}
-                    stroke={alarm.color}
-                    strokeDasharray="8 4"
-                    strokeWidth={1.5}
-                    label={{
-                      value: alarm.label,
-                      position: "right",
-                      fill: alarm.color,
-                      fontSize: 10,
-                    }}
-                  />
-                )}
-              </LineChart>
-            ) : chartType === "line" ? (
-              <LineChart
-                data={formatted}
-                margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  className="stroke-border"
-                />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fill: "currentColor", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                  className="text-muted-foreground"
-                />
-                <YAxis
-                  tick={{ fill: "currentColor", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v: number) => `${v.toLocaleString()}${unit}`}
-                  className="text-muted-foreground"
-                />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  formatter={(value: number | undefined) => [
-                    `${(value ?? 0).toLocaleString()}${unit}`,
-                    title,
-                  ]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke={color}
-                  strokeWidth={2}
-                  dot={false}
-                />
-                {alarm && (
-                  <ReferenceLine
-                    y={alarm.value}
-                    stroke={alarm.color}
-                    strokeDasharray="8 4"
-                    strokeWidth={1.5}
-                    label={{
-                      value: alarm.label,
-                      position: "right",
-                      fill: alarm.color,
-                      fontSize: 10,
-                    }}
-                  />
-                )}
-              </LineChart>
-            ) : (
-              <AreaChart
-                data={formatted}
-                margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient
-                    id={`grad-${title.replace(/\s/g, "")}`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor={fillColor ?? color}
-                      stopOpacity={0.5}
+                  {multiLine.map((line) => (
+                    <Line
+                      key={line.label}
+                      type="monotone"
+                      dataKey={line.label}
+                      stroke={line.color}
+                      strokeWidth={1.5}
+                      dot={false}
+                      strokeDasharray={line.label === "P99" ? "4 2" : undefined}
+                      name={line.label}
                     />
-                    <stop
-                      offset="95%"
-                      stopColor={fillColor ?? color}
-                      stopOpacity={0.05}
+                  ))}
+                  {alarm && (
+                    <ReferenceLine
+                      y={alarm.value}
+                      stroke={alarm.color}
+                      strokeDasharray="8 4"
+                      strokeWidth={1.5}
+                      label={{
+                        value: alarm.label,
+                        position: "right",
+                        fill: alarm.color,
+                        fontSize: 10,
+                      }}
                     />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  className="stroke-border"
-                />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fill: "currentColor", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                  className="text-muted-foreground"
-                />
-                <YAxis
-                  tick={{ fill: "currentColor", fontSize: 10 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v: number) => `${v.toLocaleString()}${unit}`}
-                  className="text-muted-foreground"
-                />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  formatter={(value: number | undefined) => [
-                    `${(value ?? 0).toLocaleString()}${unit}`,
-                    title,
-                  ]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke={color}
-                  strokeWidth={2}
-                  fill={`url(#grad-${title.replace(/\s/g, "")})`}
-                />
-                {alarm && (
-                  <ReferenceLine
-                    y={alarm.value}
-                    stroke={alarm.color}
-                    strokeDasharray="8 4"
-                    strokeWidth={1.5}
-                    label={{
-                      value: alarm.label,
-                      position: "right",
-                      fill: alarm.color,
-                      fontSize: 10,
-                    }}
+                  )}
+                </LineChart>
+              ) : chartType === "line" ? (
+                <LineChart
+                  data={formatted}
+                  margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
                   />
-                )}
-              </AreaChart>
-            )}
-          </ResponsiveContainer>
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fill: "currentColor", fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    className="text-muted-foreground"
+                  />
+                  <YAxis
+                    tick={{ fill: "currentColor", fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v: number) =>
+                      `${v.toLocaleString()}${unit}`
+                    }
+                    className="text-muted-foreground"
+                  />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(value: number | undefined) => [
+                      `${(value ?? 0).toLocaleString()}${unit}`,
+                      title,
+                    ]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke={color}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  {alarm && (
+                    <ReferenceLine
+                      y={alarm.value}
+                      stroke={alarm.color}
+                      strokeDasharray="8 4"
+                      strokeWidth={1.5}
+                      label={{
+                        value: alarm.label,
+                        position: "right",
+                        fill: alarm.color,
+                        fontSize: 10,
+                      }}
+                    />
+                  )}
+                </LineChart>
+              ) : (
+                <AreaChart
+                  data={formatted}
+                  margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id={`grad-${title.replace(/\s/g, "")}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={fillColor ?? color}
+                        stopOpacity={0.5}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={fillColor ?? color}
+                        stopOpacity={0.05}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fill: "currentColor", fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    className="text-muted-foreground"
+                  />
+                  <YAxis
+                    tick={{ fill: "currentColor", fontSize: 10 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v: number) =>
+                      `${v.toLocaleString()}${unit}`
+                    }
+                    className="text-muted-foreground"
+                  />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(value: number | undefined) => [
+                      `${(value ?? 0).toLocaleString()}${unit}`,
+                      title,
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke={color}
+                    strokeWidth={2}
+                    fill={`url(#grad-${title.replace(/\s/g, "")})`}
+                  />
+                  {alarm && (
+                    <ReferenceLine
+                      y={alarm.value}
+                      stroke={alarm.color}
+                      strokeDasharray="8 4"
+                      strokeWidth={1.5}
+                      label={{
+                        value: alarm.label,
+                        position: "right",
+                        fill: alarm.color,
+                        fontSize: 10,
+                      }}
+                    />
+                  )}
+                </AreaChart>
+              )}
+            </ResponsiveContainer>
           )}
         </div>
       </CardContent>

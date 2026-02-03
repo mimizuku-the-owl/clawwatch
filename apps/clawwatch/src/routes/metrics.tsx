@@ -12,6 +12,16 @@ import { useQuery } from "convex/react";
 import { useMemo, useState } from "react";
 import { MetricWidget } from "@/components/metric-widget";
 import type { MetricPoint } from "@/lib/utils";
+import type { CostRecord, HealthCheck } from "@/types";
+
+/** Shape returned by the activityTimeSeries query (bucketed). */
+interface ActivityBucket {
+  timestamp: number;
+  total: number;
+  errors: number;
+  toolCalls: number;
+  messages: number;
+}
 
 export const Route = createFileRoute("/metrics")({
   component: MetricsPage,
@@ -49,7 +59,7 @@ function percentile(values: number[], p: number): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
   const idx = Math.ceil((p / 100) * sorted.length) - 1;
-  return sorted[Math.max(0, idx)];
+  return sorted[Math.max(0, idx)] ?? 0;
 }
 
 function bucketPercentiles(
@@ -108,14 +118,17 @@ function MetricsPage() {
   const latency = useMemo(() => {
     if (!healthData?.length) return { p50: [], p95: [], p99: [] };
     const raw = healthData
-      .filter((h) => h.responseTimeMs > 0)
-      .map((h) => ({ timestamp: h.timestamp, value: h.responseTimeMs }));
+      .filter((h: HealthCheck) => (h.responseTimeMs ?? 0) > 0)
+      .map((h: HealthCheck) => ({
+        timestamp: h.timestamp,
+        value: h.responseTimeMs ?? 0,
+      }));
     return bucketPercentiles(raw, bucketMs);
   }, [healthData, bucketMs]);
 
   const requestRate = useMemo(() => {
     if (!activityData?.length) return [];
-    return activityData.map((a) => ({
+    return activityData.map((a: ActivityBucket) => ({
       timestamp: a.timestamp,
       value: a.total,
     }));
@@ -123,7 +136,7 @@ function MetricsPage() {
 
   const errorRate = useMemo(() => {
     if (!activityData?.length) return [];
-    return activityData.map((a) => ({
+    return activityData.map((a: ActivityBucket) => ({
       timestamp: a.timestamp,
       value: a.errors,
     }));
@@ -131,7 +144,7 @@ function MetricsPage() {
 
   const tokenThroughput = useMemo(() => {
     if (!costData?.length) return [];
-    const raw = costData.map((c) => ({
+    const raw = costData.map((c: CostRecord) => ({
       timestamp: c.timestamp,
       value: c.inputTokens + c.outputTokens,
     }));
@@ -140,7 +153,7 @@ function MetricsPage() {
 
   const sessionCount = useMemo(() => {
     if (!healthData?.length) return [];
-    const raw = healthData.map((h) => ({
+    const raw = healthData.map((h: HealthCheck) => ({
       timestamp: h.timestamp,
       value: h.activeSessionCount,
     }));
@@ -150,10 +163,10 @@ function MetricsPage() {
   const heartbeatLatency = useMemo(() => {
     if (!healthData?.length) return [];
     return healthData
-      .filter((h) => h.responseTimeMs > 0)
-      .map((h) => ({
+      .filter((h: HealthCheck) => (h.responseTimeMs ?? 0) > 0)
+      .map((h: HealthCheck) => ({
         timestamp: h.timestamp,
-        value: h.responseTimeMs,
+        value: h.responseTimeMs ?? 0,
       }));
   }, [healthData]);
 

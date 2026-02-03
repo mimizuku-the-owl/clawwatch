@@ -22,8 +22,8 @@ interface DailyCostTrendProps {
   data: DailyCostData[];
 }
 
-export const DailyCostTrend = memo(function DailyCostTrend({ 
-  data 
+export const DailyCostTrend = memo(function DailyCostTrend({
+  data,
 }: DailyCostTrendProps) {
   return (
     <ClientOnly fallback={chartFallback}>

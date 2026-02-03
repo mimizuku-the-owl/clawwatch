@@ -6,24 +6,22 @@ import { cn } from "@clawwatch/ui/lib/utils";
 import { api } from "@convex/api";
 import type { Id } from "@convex/dataModel";
 import {
+  type Cell,
+  type ColumnDef,
+  type ColumnFiltersState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
+  type Header,
+  type HeaderGroup,
+  type Row,
   type SortingState,
+  useReactTable,
 } from "@tanstack/react-table";
 import { useQuery } from "convex/react";
-import {
-  ChevronDown,
-  ChevronUp,
-  Radio,
-  Search,
-  X,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Radio, Search, X } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -68,11 +66,11 @@ function getLevel(type: string): LogLevel {
 }
 
 const LEVEL_STYLES: Record<LogLevel, string> = {
-  DEBUG: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-  INFO: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  WARNING: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  ERROR: "bg-red-500/10 text-red-400 border-red-500/20",
-  CRITICAL: "bg-red-600/15 text-red-500 border-red-600/30 font-bold",
+  DEBUG: "bg-zinc-500/8 text-zinc-400 border-zinc-500/15",
+  INFO: "bg-blue-500/8 text-blue-400 border-blue-500/15",
+  WARNING: "bg-amber-500/8 text-amber-400 border-amber-500/15",
+  ERROR: "bg-red-500/8 text-red-400 border-red-500/15",
+  CRITICAL: "bg-red-600/12 text-red-500 border-red-600/20 font-bold",
 };
 
 const LEVEL_DOT: Record<LogLevel, string> = {
@@ -90,7 +88,13 @@ const TIME_RANGES = [
   { label: "Past 7d", value: 7 * 24 * 60 * 60 * 1000 },
 ] as const;
 
-const ALL_LEVELS: LogLevel[] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
+const ALL_LEVELS: LogLevel[] = [
+  "DEBUG",
+  "INFO",
+  "WARNING",
+  "ERROR",
+  "CRITICAL",
+];
 
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString("en-US", {
@@ -122,9 +126,7 @@ export const EventLog = memo(function EventLog({
 }: EventLogProps) {
   const rawData = useQuery(
     api.activities.events,
-    agentId
-      ? { agentId: agentId as Id<"agents">, limit }
-      : { limit },
+    agentId ? { agentId: agentId as Id<"agents">, limit } : { limit },
   );
 
   // State
@@ -156,7 +158,7 @@ export const EventLog = memo(function EventLog({
     const now = Date.now();
     const cutoff = now - timeRange;
 
-    return source.filter((event) => {
+    return source.filter((event: EventRecord) => {
       // Time range
       if (event._creationTime < cutoff) return false;
 
@@ -201,14 +203,14 @@ export const EventLog = memo(function EventLog({
   // Unique agents for dropdown
   const uniqueAgents = useMemo(() => {
     const source = rawData ?? [];
-    const names = new Set(source.map((e) => e.agentName));
+    const names = new Set<string>(source.map((e: EventRecord) => e.agentName));
     return Array.from(names).sort();
   }, [rawData]);
 
   // Unique types for dropdown
   const uniqueTypes = useMemo(() => {
     const source = rawData ?? [];
-    const types = new Set(source.map((e) => e.type));
+    const types = new Set<string>(source.map((e: EventRecord) => e.type));
     return Array.from(types).sort();
   }, [rawData]);
 
@@ -248,7 +250,10 @@ export const EventLog = memo(function EventLog({
               )}
             >
               <span
-                className={cn("inline-block h-1.5 w-1.5 rounded-full mr-1", LEVEL_DOT[level])}
+                className={cn(
+                  "inline-block h-1.5 w-1.5 rounded-full mr-1",
+                  LEVEL_DOT[level],
+                )}
               />
               {level}
             </Badge>
@@ -473,41 +478,49 @@ export const EventLog = memo(function EventLog({
       {/* Table */}
       <div
         ref={tableContainerRef}
-        className="rounded-lg border bg-card overflow-hidden"
+        className="rounded-lg border border-border/50 bg-card overflow-hidden"
       >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b bg-muted/30">
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className={cn(
-                        "px-3 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider",
-                        header.column.getCanSort() && "cursor-pointer select-none hover:text-foreground",
-                      )}
-                      style={{
-                        width: header.getSize() < 999 ? header.getSize() : undefined,
-                      }}
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      <div className="flex items-center gap-1">
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                        {header.column.getIsSorted() === "asc" && (
-                          <ChevronUp className="h-3 w-3" />
-                        )}
-                        {header.column.getIsSorted() === "desc" && (
-                          <ChevronDown className="h-3 w-3" />
-                        )}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              ))}
+              {table
+                .getHeaderGroups()
+                .map((headerGroup: HeaderGroup<EventRecord>) => (
+                  <tr key={headerGroup.id} className="border-b bg-muted/30">
+                    {headerGroup.headers.map(
+                      (header: Header<EventRecord, unknown>) => (
+                        <th
+                          key={header.id}
+                          className={cn(
+                            "px-3 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider",
+                            header.column.getCanSort() &&
+                              "cursor-pointer select-none hover:text-foreground",
+                          )}
+                          style={{
+                            width:
+                              header.getSize() < 999
+                                ? header.getSize()
+                                : undefined,
+                          }}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <div className="flex items-center gap-1">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {header.column.getIsSorted() === "asc" && (
+                              <ChevronUp className="h-3 w-3" />
+                            )}
+                            {header.column.getIsSorted() === "desc" && (
+                              <ChevronDown className="h-3 w-3" />
+                            )}
+                          </div>
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                ))}
             </thead>
             <tbody>
               {rawData === undefined ? (
@@ -553,7 +566,7 @@ export const EventLog = memo(function EventLog({
                   </td>
                 </tr>
               ) : (
-                table.getRowModel().rows.map((row) => {
+                table.getRowModel().rows.map((row: Row<EventRecord>) => {
                   const isExpanded = expandedRows.has(row.original._id);
                   return (
                     <EventRow
@@ -578,7 +591,7 @@ export const EventLog = memo(function EventLog({
 // ── Event Row ──
 
 interface EventRowProps {
-  row: any;
+  row: Row<EventRecord>;
   isExpanded: boolean;
   onToggle: () => void;
   showAgentColumn: boolean;
@@ -605,7 +618,7 @@ const EventRow = memo(function EventRow({
           isNew && "animate-in fade-in-0 slide-in-from-top-1 duration-300",
         )}
       >
-        {row.getVisibleCells().map((cell: any) => (
+        {row.getVisibleCells().map((cell: Cell<EventRecord, unknown>) => (
           <td key={cell.id} className="px-3 py-2">
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </td>

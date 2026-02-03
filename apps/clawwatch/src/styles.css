@@ -11,34 +11,42 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --font-sans: "Geist", "Geist Fallback", sans-serif;
+  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   --font-mono: "Geist Mono", "Geist Mono Fallback", monospace;
 
-  /* clawwatch brand overrides — keel purple */
-  --primary: oklch(0.5393 0.2713 286.7462);
+  --primary: oklch(0.55 0.27 287);
   --primary-foreground: oklch(1 0 0);
-  --ring: oklch(0.5393 0.2713 286.7462);
+  --ring: oklch(0.55 0.27 287);
 
-  --shadow-2xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
-  --shadow-xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
-  --shadow-sm: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 1px 2px -1px hsl(0 0% 0% / 0.16);
-  --shadow: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 1px 2px -1px hsl(0 0% 0% / 0.16);
-  --shadow-md: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 2px 4px -1px hsl(0 0% 0% / 0.16);
-  --shadow-lg: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 4px 6px -1px hsl(0 0% 0% / 0.16);
-  --shadow-xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 8px 10px -1px hsl(0 0% 0% / 0.16);
-  --shadow-2xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.4);
-  --tracking-normal: -0.025em;
-  --spacing: 0.27rem;
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.06), 0 8px 10px -6px rgb(0 0 0 / 0.06);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+  --tracking-normal: -0.011em;
+  --spacing: 0.25rem;
 }
 
 .dark {
-  --primary: oklch(0.6132 0.2294 291.7437);
+  --primary: oklch(0.65 0.24 290);
   --primary-foreground: oklch(1 0 0);
-  --ring: oklch(0.6132 0.2294 291.7437);
-  --sidebar-primary: oklch(0.6132 0.2294 291.7437);
+  --ring: oklch(0.65 0.24 290);
+  --sidebar-primary: oklch(0.65 0.24 290);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent-foreground: oklch(0.6132 0.2294 291.7437);
+  --sidebar-accent-foreground: oklch(0.88 0 0);
+
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.35), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
@@ -55,8 +63,8 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
 
-  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
-  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-tighter: calc(var(--tracking-normal) - 0.04em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.02em);
   --tracking-normal: var(--tracking-normal);
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
@@ -73,6 +81,17 @@
   --color-keel-800: #6b21a8;
   --color-keel-900: #581c87;
   --color-keel-950: #3b0764;
+
+  --color-surface: oklch(0.155 0.008 285);
+  --color-surface-raised: oklch(0.18 0.009 285);
+
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.5s ease-out both;
+  --animate-slide-in: slide-in 0.3s ease-out both;
+  --animate-shimmer: shimmer 2s infinite linear;
+  --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
+  --animate-glow: glow-pulse 2s ease-in-out infinite;
+  --animate-stream-in: stream-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 body {
@@ -82,3 +101,70 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Stagger animation delays for grid children */
+.stagger-grid > * { --stagger: 0; animation-delay: calc(var(--stagger) * 60ms); }
+.stagger-grid > *:nth-child(1) { --stagger: 0; }
+.stagger-grid > *:nth-child(2) { --stagger: 1; }
+.stagger-grid > *:nth-child(3) { --stagger: 2; }
+.stagger-grid > *:nth-child(4) { --stagger: 3; }
+.stagger-grid > *:nth-child(5) { --stagger: 4; }
+.stagger-grid > *:nth-child(6) { --stagger: 5; }
+.stagger-grid > *:nth-child(7) { --stagger: 6; }
+.stagger-grid > *:nth-child(8) { --stagger: 7; }
+
+/* Shimmer effect for loading states */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.25 0.01 285 / 0.4) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px 0 oklch(0.65 0.24 290 / 0.15); }
+  50% { box-shadow: 0 0 16px 2px oklch(0.65 0.24 290 / 0.25); }
+}
+
+@keyframes stream-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(0.30 0.01 285); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.38 0.01 285); }
+
+/* Number tabular figures for data display */
+.tabular-nums { font-variant-numeric: tabular-nums; }

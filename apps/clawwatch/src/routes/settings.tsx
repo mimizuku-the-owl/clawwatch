@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { useMemo, useState } from "react";
+import type { Agent, NotificationChannel } from "@/types";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -37,7 +38,9 @@ function SettingsPage() {
   const removeNotification = useMutation(api.notifications.remove);
 
   const [showNewChannel, setShowNewChannel] = useState(false);
-  const [channelType, setChannelType] = useState<"discord" | "email" | "webhook">("discord");
+  const [channelType, setChannelType] = useState<
+    "discord" | "email" | "webhook"
+  >("discord");
   const [channelName, setChannelName] = useState("");
   const [channelWebhook, setChannelWebhook] = useState("");
   const [channelEmail, setChannelEmail] = useState("");
@@ -46,11 +49,11 @@ function SettingsPage() {
   const connectionStatus = useMemo(() => {
     if (!agents) return "loading";
     if (agents.length === 0) return "disconnected";
-    const onlineAgents = agents.filter((a) => a.status === "online");
+    const onlineAgents = agents.filter((a: Agent) => a.status === "online");
     if (onlineAgents.length === 0) return "offline";
     // Consider connected if any agent had a heartbeat within last 5 minutes
     const recentHeartbeat = agents.some(
-      (a) => Date.now() - a.lastHeartbeat < 5 * 60 * 1000,
+      (a: Agent) => Date.now() - a.lastHeartbeat < 5 * 60 * 1000,
     );
     return recentHeartbeat ? "connected" : "stale";
   }, [agents]);
@@ -72,10 +75,10 @@ function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6 max-w-3xl">
+    <div className="flex flex-1 flex-col gap-5 p-5 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-lg font-semibold tracking-tight">Settings</h1>
+        <p className="text-xs text-muted-foreground">
           Manage your gateway connection and notification preferences
         </p>
       </div>
@@ -86,14 +89,21 @@ function SettingsPage() {
           <CardTitle className="flex items-center gap-2">
             Gateway Connection
             {connectionStatus === "connected" && (
-              <Badge variant="default" className="text-xs">Connected</Badge>
+              <Badge variant="default" className="text-xs">
+                Connected
+              </Badge>
             )}
             {connectionStatus === "stale" && (
-              <Badge variant="secondary" className="text-xs">Stale</Badge>
+              <Badge variant="secondary" className="text-xs">
+                Stale
+              </Badge>
             )}
-            {(connectionStatus === "disconnected" || connectionStatus === "offline") && (
+            {(connectionStatus === "disconnected" ||
+              connectionStatus === "offline") && (
               <Badge variant="destructive" className="text-xs">
-                {connectionStatus === "disconnected" ? "Not Connected" : "Offline"}
+                {connectionStatus === "disconnected"
+                  ? "Not Connected"
+                  : "Offline"}
               </Badge>
             )}
           </CardTitle>
@@ -112,8 +122,9 @@ function SettingsPage() {
                   Collector is connected and receiving data
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {agents?.filter((a) => a.status === "online").length ?? 0} agent(s)
-                  online · Data flowing normally
+                  {agents?.filter((a: Agent) => a.status === "online").length ??
+                    0}{" "}
+                  agent(s) online · Data flowing normally
                 </p>
               </div>
             </div>
@@ -127,8 +138,8 @@ function SettingsPage() {
                   Connection may be stale
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  No heartbeat received in the last 5 minutes. The gateway might be
-                  experiencing issues.
+                  No heartbeat received in the last 5 minutes. The gateway might
+                  be experiencing issues.
                 </p>
               </div>
             </div>
@@ -153,12 +164,15 @@ function SettingsPage() {
               <div className="rounded-lg border bg-muted/30 p-4">
                 <p className="text-sm font-medium mb-2">Quick Setup</p>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Add these environment variables to your Clawdbot configuration:
+                  Add these environment variables to your Clawdbot
+                  configuration:
                 </p>
                 <div className="rounded-md bg-background p-3 font-mono text-xs space-y-1">
                   <p>
                     <span className="text-muted-foreground">CONVEX_URL=</span>
-                    <span className="text-primary">http://100.115.177.85:3210</span>
+                    <span className="text-primary">
+                      http://100.115.177.85:3210
+                    </span>
                   </p>
                 </div>
               </div>
@@ -210,7 +224,9 @@ function SettingsPage() {
                   <Input
                     placeholder="e.g. #alerts"
                     value={channelName}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setChannelName(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setChannelName(e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -219,7 +235,9 @@ function SettingsPage() {
                   type="url"
                   placeholder="Webhook URL"
                   value={channelWebhook}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setChannelWebhook(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setChannelWebhook(e.target.value)
+                  }
                 />
               )}
               {channelType === "email" && (
@@ -227,7 +245,9 @@ function SettingsPage() {
                   type="email"
                   placeholder="Email address"
                   value={channelEmail}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setChannelEmail(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setChannelEmail(e.target.value)
+                  }
                 />
               )}
               <div className="flex justify-end gap-2">
@@ -247,7 +267,7 @@ function SettingsPage() {
 
           {notificationChannels && notificationChannels.length > 0 ? (
             <div className="space-y-2">
-              {notificationChannels.map((channel) => (
+              {notificationChannels.map((channel: NotificationChannel) => (
                 <div
                   key={channel._id}
                   className="flex items-center justify-between rounded-lg border p-3"

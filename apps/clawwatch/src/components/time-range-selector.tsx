@@ -1,4 +1,4 @@
-import { Button } from "@clawwatch/ui/components/button";
+import { cn } from "@clawwatch/ui/lib/utils";
 import { memo } from "react";
 
 export type TimeRange = "24h" | "7d" | "30d";
@@ -19,17 +19,20 @@ export const TimeRangeSelector = memo(function TimeRangeSelector({
   onChange,
 }: TimeRangeSelectorProps) {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+    <div className="flex items-center gap-0.5 rounded-md border border-border/50 bg-muted/40 p-0.5">
       {TIME_RANGE_OPTIONS.map((option) => (
-        <Button
+        <button
           key={option.value}
-          variant={value === option.value ? "secondary" : "ghost"}
-          size="sm"
           onClick={() => onChange(option.value)}
-          className="h-7 px-3 text-xs"
+          className={cn(
+            "rounded-sm px-2.5 py-1 text-xs font-medium transition-all",
+            value === option.value
+              ? "bg-background text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground",
+          )}
         >
           {option.label}
-        </Button>
+        </button>
       ))}
     </div>
   );

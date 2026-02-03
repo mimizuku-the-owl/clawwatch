@@ -1,4 +1,3 @@
-import { memo, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,6 +7,7 @@ import {
   TableRow,
 } from "@clawwatch/ui/components/table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { memo, useMemo, useState } from "react";
 import { formatCost, formatTokens } from "@/lib/utils";
 
 export interface ModelBreakdownData {
@@ -24,7 +24,14 @@ interface ModelComparisonTableProps {
   data: ModelBreakdownData[];
 }
 
-type SortKey = "model" | "requests" | "inputTokens" | "outputTokens" | "cost" | "avgCostPerRequest" | "costPer1KTokens";
+type SortKey =
+  | "model"
+  | "requests"
+  | "inputTokens"
+  | "outputTokens"
+  | "cost"
+  | "avgCostPerRequest"
+  | "costPer1KTokens";
 type SortDir = "asc" | "desc";
 
 export const ModelComparisonTable = memo(function ModelComparisonTable({
@@ -59,7 +66,9 @@ export const ModelComparisonTable = memo(function ModelComparisonTable({
 
   const SortIcon = ({ column }: { column: SortKey }) => {
     if (sortKey !== column) {
-      return <ArrowUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />;
+      return (
+        <ArrowUpDown className="ml-1 inline h-3 w-3 text-muted-foreground/50" />
+      );
     }
     return sortDir === "asc" ? (
       <ArrowUp className="ml-1 inline h-3 w-3" />
@@ -122,9 +131,7 @@ export const ModelComparisonTable = memo(function ModelComparisonTable({
         <TableBody>
           {sortedData.map((row) => (
             <TableRow key={row.model}>
-              <TableCell className="text-xs font-medium">
-                {row.model}
-              </TableCell>
+              <TableCell className="text-xs font-medium">{row.model}</TableCell>
               <TableCell className="text-right font-mono text-xs">
                 {row.requests}
               </TableCell>

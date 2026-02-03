@@ -9,24 +9,40 @@ import { cn } from "@clawwatch/ui/lib/utils";
 import { api } from "@convex/api";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import {
-  Activity,
-  DollarSign,
-  Hash,
-  TrendingUp,
-} from "lucide-react";
+import { Activity, DollarSign, Hash, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
+import { CachePerformance } from "@/components/cache-performance";
 import { CostByAgentChart } from "@/components/cost-by-agent-chart";
 import { CostByModelChart } from "@/components/cost-by-model-chart";
-import { CachePerformance } from "@/components/cache-performance";
 import { DailyCostTrend } from "@/components/daily-cost-trend";
 import { ModelComparisonTable } from "@/components/model-comparison-table";
 import { MonitoringFilters } from "@/components/monitoring-filters";
 import { StatCard } from "@/components/stat-card";
+import type { TimeRange } from "@/components/time-range-selector";
 import { TokenDistributionChart } from "@/components/token-distribution-chart";
 import { TopSessionsTable } from "@/components/top-sessions-table";
-import type { TimeRange } from "@/components/time-range-selector";
 import { formatCost, formatTokens } from "@/lib/utils";
+import type { Budget, CostRecord } from "@/types";
+
+interface AgentCostSummary {
+  agentId: string;
+  agentName: string;
+  cost: number;
+  tokens: number;
+  requests: number;
+}
+
+interface ModelBreakdownEntry {
+  model: string;
+  cost: number;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+  requests: number;
+  avgCostPerRequest: number;
+  costPer1KTokens: number;
+}
 
 export const Route = createFileRoute("/monitoring")({
   component: MonitoringPage,
@@ -80,10 +96,7 @@ function MonitoringPage() {
 
   const costData = useQuery(api.costs.byTimeRange, timeRangeArgs);
   const agentCostData = useQuery(api.costs.byAgent, timeRangeArgs);
-  const modelBreakdownData = useQuery(
-    api.costs.modelBreakdown,
-    timeRangeArgs,
-  );
+  const modelBreakdownData = useQuery(api.costs.modelBreakdown, timeRangeArgs);
   const topSessionsData = useQuery(api.costs.topSessions, {
     ...timeRangeArgs,
     limit: 10,
@@ -108,25 +121,25 @@ function MonitoringPage() {
   // Available models and agents for filters
   const availableModels = useMemo(() => {
     if (!costData) return [];
-    const modelSet = new Set(costData.map((r) => r.model));
+    const modelSet = new Set<string>(costData.map((r: CostRecord) => r.model));
     return Array.from(modelSet).sort();
   }, [costData]);
 
   const availableAgents = useMemo(() => {
     if (!agentCostData) return [];
-    return agentCostData.map((a) => ({ id: a.agentId, name: a.agentName }));
+    return agentCostData.map((a: AgentCostSummary) => ({
+      id: a.agentId,
+      name: a.agentName,
+    }));
   }, [agentCostData]);
 
   // Filter cost data
   const filteredCostData = useMemo(() => {
     if (!costData) return [];
-    return costData.filter((r) => {
+    return costData.filter((r: CostRecord) => {
       if (selectedModels.length > 0 && !selectedModels.includes(r.model))
         return false;
-      if (
-        selectedAgents.length > 0 &&
-        !selectedAgents.includes(r.agentId)
-      )
+      if (selectedAgents.length > 0 && !selectedAgents.includes(r.agentId))
         return false;
       return true;
     });
@@ -134,7 +147,7 @@ function MonitoringPage() {
 
   // Process data for cost over time by model chart
   const costByModelTimeSeriesData = useMemo(() => {
-    return filteredCostData.map((record) => ({
+    return filteredCostData.map((record: CostRecord) => ({
       timestamp: record.timestamp || Date.now(),
       cost: record.cost,
       model: record.model,
@@ -167,7 +180,14 @@ function MonitoringPage() {
       };
     }
     const totals = modelBreakdownData.reduce(
-      (acc, m) => {
+      (
+        acc: {
+          cacheReadTokens: number;
+          cacheWriteTokens: number;
+          totalInputTokens: number;
+        },
+        m: ModelBreakdownEntry,
+      ) => {
         acc.cacheReadTokens += m.cacheReadTokens;
         acc.cacheWriteTokens += m.cacheWriteTokens;
         acc.totalInputTokens += m.inputTokens;
@@ -193,7 +213,15 @@ function MonitoringPage() {
       };
     }
     return modelBreakdownData.reduce(
-      (acc, m) => {
+      (
+        acc: {
+          inputTokens: number;
+          outputTokens: number;
+          cacheReadTokens: number;
+          cacheWriteTokens: number;
+        },
+        m: ModelBreakdownEntry,
+      ) => {
         acc.inputTokens += m.inputTokens;
         acc.outputTokens += m.outputTokens;
         acc.cacheReadTokens += m.cacheReadTokens;
@@ -211,13 +239,16 @@ function MonitoringPage() {
 
   // Summary stat calculations
   const periodCost = useMemo(() => {
-    const total = filteredCostData.reduce((sum, r) => sum + r.cost, 0);
+    const total = filteredCostData.reduce(
+      (sum: number, r: CostRecord) => sum + r.cost,
+      0,
+    );
     return formatCost(total);
   }, [filteredCostData]);
 
   const periodTokens = useMemo(() => {
     const total = filteredCostData.reduce(
-      (sum, r) => sum + r.inputTokens + r.outputTokens,
+      (sum: number, r: CostRecord) => sum + r.inputTokens + r.outputTokens,
       0,
     );
     return formatTokens(total);
@@ -229,11 +260,13 @@ function MonitoringPage() {
 
   const projectedMonthlyCost = useMemo(() => {
     if (!filteredCostData.length) return "$0.00";
-    const total = filteredCostData.reduce((sum, r) => sum + r.cost, 0);
+    const total = filteredCostData.reduce(
+      (sum: number, r: CostRecord) => sum + r.cost,
+      0,
+    );
 
     // Calculate time span of data
-    const hours =
-      timeRange === "24h" ? 24 : timeRange === "7d" ? 168 : 720;
+    const hours = timeRange === "24h" ? 24 : timeRange === "7d" ? 168 : 720;
     const hoursInMonth = 730;
     const projected = (total / hours) * hoursInMonth;
     return formatCost(projected);
@@ -276,13 +309,10 @@ function MonitoringPage() {
 
   const budgetItems = useMemo(
     () =>
-      budgets?.map((budget) => {
+      budgets?.map((budget: Budget) => {
         const pct =
           budget.limitDollars > 0
-            ? Math.min(
-                100,
-                (budget.currentSpend / budget.limitDollars) * 100,
-              )
+            ? Math.min(100, (budget.currentSpend / budget.limitDollars) * 100)
             : 0;
         return {
           ...budget,
@@ -297,9 +327,9 @@ function MonitoringPage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-5 p-5">
       {/* Top: Filter bar */}
-      <Card>
+      <Card className="border-border/50 animate-fade-in">
         <CardContent className="py-3">
           <MonitoringFilters
             timeRange={timeRange}
@@ -315,40 +345,32 @@ function MonitoringPage() {
       </Card>
 
       {/* Row 1: KPI Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Cost"
           value={periodCost}
           change={`${timeRange} period`}
-          icon={
-            <DollarSign className="h-5 w-5 text-primary" />
-          }
+          icon={<DollarSign className="h-5 w-5 text-primary" />}
           sparkline={costSparkline}
         />
         <StatCard
           label="Total Tokens"
           value={periodTokens}
           change={`${periodRequests} requests`}
-          icon={
-            <Hash className="h-5 w-5 text-blue-400" />
-          }
+          icon={<Hash className="h-5 w-5 text-blue-400" />}
           sparkline={tokenSparkline}
         />
         <StatCard
           label="Requests"
           value={periodRequests}
           change={`${timeRange} period`}
-          icon={
-            <Activity className="h-5 w-5 text-emerald-400" />
-          }
+          icon={<Activity className="h-5 w-5 text-emerald-400" />}
         />
         <StatCard
           label="Projected Monthly"
           value={projectedMonthlyCost}
           change="Based on current burn rate"
-          icon={
-            <TrendingUp className="h-5 w-5 text-amber-400" />
-          }
+          icon={<TrendingUp className="h-5 w-5 text-amber-400" />}
         />
       </div>
 
@@ -366,13 +388,11 @@ function MonitoringPage() {
       </Card>
 
       {/* Row 3: Two-column — Cost by Agent + Model Comparison */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Cost by Agent</CardTitle>
-            <CardDescription>
-              Which agents are costing the most
-            </CardDescription>
+            <CardDescription>Which agents are costing the most</CardDescription>
           </CardHeader>
           <CardContent>
             {agentCostData && agentCostData.length > 0 ? (
@@ -388,9 +408,7 @@ function MonitoringPage() {
         <Card>
           <CardHeader>
             <CardTitle>Model Comparison</CardTitle>
-            <CardDescription>
-              Sortable breakdown by model
-            </CardDescription>
+            <CardDescription>Sortable breakdown by model</CardDescription>
           </CardHeader>
           <CardContent>
             <ModelComparisonTable data={modelBreakdownData ?? []} />
@@ -399,7 +417,7 @@ function MonitoringPage() {
       </div>
 
       {/* Row 4: Two-column — Daily Cost Trend + Cache Performance */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Daily Cost Trend</CardTitle>
@@ -426,7 +444,7 @@ function MonitoringPage() {
       </div>
 
       {/* Row 5: Two-column — Token Distribution + Top Sessions */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Token Distribution</CardTitle>
@@ -456,57 +474,57 @@ function MonitoringPage() {
       <Card>
         <CardHeader>
           <CardTitle>Budgets</CardTitle>
-          <CardDescription>
-            Spending limits and thresholds
-          </CardDescription>
+          <CardDescription>Spending limits and thresholds</CardDescription>
         </CardHeader>
         <CardContent>
           {budgetItems.length > 0 ? (
             <div className="space-y-3">
-              {budgetItems.map((budget) => (
-                <div
-                  key={budget._id}
-                  className="rounded-lg border p-4"
-                >
-                  <div className="mb-2 flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-medium">
-                        {budget.name}
-                      </span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {budget.period} ·{" "}
-                        {budget.hardStop
-                          ? "Hard stop"
-                          : "Alert only"}
+              {budgetItems.map(
+                (
+                  budget: Budget & {
+                    pct: number;
+                    isOver: boolean;
+                    isWarning: boolean;
+                    formattedSpend: string;
+                    formattedLimit: string;
+                  },
+                ) => (
+                  <div key={budget._id} className="rounded-lg border p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-medium">
+                          {budget.name}
+                        </span>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {budget.period} ·{" "}
+                          {budget.hardStop ? "Hard stop" : "Alert only"}
+                        </span>
+                      </div>
+                      <span className="font-mono text-sm">
+                        {budget.formattedSpend} / {budget.formattedLimit}
                       </span>
                     </div>
-                    <span className="font-mono text-sm">
-                      {budget.formattedSpend} /{" "}
-                      {budget.formattedLimit}
-                    </span>
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all",
+                          budget.isOver
+                            ? "bg-red-500"
+                            : budget.isWarning
+                              ? "bg-amber-500"
+                              : "bg-primary",
+                        )}
+                        style={{ width: `${budget.pct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        budget.isOver
-                          ? "bg-red-500"
-                          : budget.isWarning
-                            ? "bg-amber-500"
-                            : "bg-primary",
-                      )}
-                      style={{ width: `${budget.pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
               <p className="text-sm">No budgets configured</p>
-              <p className="mt-1 text-xs">
-                Set up spending limits in Settings
-              </p>
+              <p className="mt-1 text-xs">Set up spending limits in Settings</p>
             </div>
           )}
         </CardContent>

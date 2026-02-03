@@ -23,8 +23,8 @@ interface CostByModelChartProps {
   data: CostByModelData[];
 }
 
-export const CostByModelChart = memo(function CostByModelChart({ 
-  data 
+export const CostByModelChart = memo(function CostByModelChart({
+  data,
 }: CostByModelChartProps) {
   return (
     <ClientOnly fallback={chartFallback}>

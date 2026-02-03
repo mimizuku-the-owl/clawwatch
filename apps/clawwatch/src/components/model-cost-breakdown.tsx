@@ -23,8 +23,8 @@ interface ModelCostBreakdownProps {
   data: ModelCostData[];
 }
 
-export const ModelCostBreakdown = memo(function ModelCostBreakdown({ 
-  data 
+export const ModelCostBreakdown = memo(function ModelCostBreakdown({
+  data,
 }: ModelCostBreakdownProps) {
   return (
     <ClientOnly fallback={chartFallback}>

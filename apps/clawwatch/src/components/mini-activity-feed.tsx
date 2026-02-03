@@ -49,31 +49,38 @@ interface Props {
 
 const ActivityRow = memo(function ActivityRow({
   activity,
+  index,
 }: {
   activity: ActivityItem;
+  index: number;
 }) {
   const Icon = ACTIVITY_ICONS[activity.type] ?? MessageSquare;
   const color = ACTIVITY_COLORS[activity.type] ?? "text-muted-foreground";
 
   return (
-    <div className="group flex items-start gap-3">
+    <div
+      className="group flex items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/40 animate-fade-in-up"
+      style={{ animationDelay: `${index * 40}ms` }}
+    >
       <div className={cn("mt-0.5 shrink-0", color)}>
         <Icon className="h-3.5 w-3.5" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm leading-snug">{activity.summary}</p>
-        <div className="mt-0.5 flex items-center gap-2">
+        <p className="truncate text-[13px] leading-snug text-foreground/90">
+          {activity.summary}
+        </p>
+        <div className="mt-0.5 flex items-center gap-1.5">
           {activity.agentName && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               {activity.agentName}
             </span>
           )}
           {activity.channel && (
-            <span className="text-xs text-muted-foreground/50">
+            <span className="text-[11px] text-muted-foreground/40">
               #{activity.channel}
             </span>
           )}
-          <span className="text-xs text-muted-foreground/50">
+          <span className="text-[11px] tabular-nums text-muted-foreground/40">
             {timeAgo(activity._creationTime)}
           </span>
         </div>
@@ -87,16 +94,17 @@ export const MiniActivityFeed = memo(function MiniActivityFeed({
 }: Props) {
   if (activities.length === 0) {
     return (
-      <div className="py-8 text-center text-muted-foreground">
-        <p className="text-sm">No recent activity</p>
+      <div className="flex flex-col items-center justify-center py-10 text-muted-foreground/60">
+        <MessageSquare className="h-5 w-5 mb-2 opacity-40" />
+        <p className="text-xs">No recent activity</p>
       </div>
     );
   }
 
   return (
-    <div className="max-h-80 space-y-3 overflow-y-auto">
-      {activities.map((activity) => (
-        <ActivityRow key={activity._id} activity={activity} />
+    <div className="max-h-[340px] -mx-1 space-y-0.5 overflow-y-auto">
+      {activities.map((activity, i) => (
+        <ActivityRow key={activity._id} activity={activity} index={i} />
       ))}
     </div>
   );

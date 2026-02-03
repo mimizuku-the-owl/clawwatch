@@ -33,22 +33,22 @@ const AlertRow = memo(function AlertRow({
       <div className="flex min-w-0 items-center gap-2">
         <span
           className={cn(
-            "shrink-0 rounded px-1.5 py-0.5 text-xs font-medium",
+            "shrink-0 rounded-sm px-1.5 py-0.5 text-[10px] font-medium",
             severityColor(alert.severity),
           )}
         >
           {alert.severity}
         </span>
-        <span className="truncate">{alert.title}</span>
-        <span className="shrink-0 text-xs text-muted-foreground/50">
+        <span className="truncate text-[13px]">{alert.title}</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground/40">
           {timeAgo(alert._creationTime)}
         </span>
       </div>
-      <div className="ml-2 flex shrink-0 items-center gap-1">
+      <div className="ml-2 flex shrink-0 items-center gap-0.5">
         {!alert.acknowledgedAt && (
           <button
             onClick={() => onAcknowledge(alert._id)}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title="Acknowledge"
           >
             <CheckCircle className="h-3.5 w-3.5" />
@@ -56,7 +56,7 @@ const AlertRow = memo(function AlertRow({
         )}
         <button
           onClick={() => onResolve(alert._id)}
-          className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           title="Resolve"
         >
           <X className="h-3.5 w-3.5" />
@@ -90,29 +90,29 @@ export const AlertBanner = memo(function AlertBanner({ alerts }: Props) {
   return (
     <div
       className={cn(
-        "rounded-xl border p-4",
+        "rounded-lg border p-3.5 animate-fade-in",
         criticalCount > 0
-          ? "border-red-500/30 bg-red-500/5"
-          : "border-amber-500/30 bg-amber-500/5",
+          ? "border-red-500/20 bg-red-500/5"
+          : "border-amber-500/20 bg-amber-500/5",
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5">
         <AlertTriangle
           className={cn(
-            "mt-0.5 h-5 w-5 shrink-0",
+            "mt-0.5 h-4 w-4 shrink-0",
             criticalCount > 0 ? "text-red-400" : "text-amber-400",
           )}
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">
+          <p className="text-[13px] font-medium">
             {alerts.length} unresolved alert{alerts.length > 1 ? "s" : ""}
             {criticalCount > 0 && (
-              <span className="ml-2 text-red-400">
+              <span className="ml-1.5 text-red-400">
                 ({criticalCount} critical)
               </span>
             )}
           </p>
-          <div className="mt-2 space-y-1.5">
+          <div className="mt-1.5 space-y-1">
             {alerts.slice(0, 3).map((alert) => (
               <AlertRow
                 key={alert._id}
