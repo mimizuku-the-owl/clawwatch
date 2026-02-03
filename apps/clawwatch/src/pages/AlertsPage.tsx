@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../../packages/core/convex/_generated/api";
 import { Card } from "@/components/Card";
 import { cn, severityColor, timeAgo } from "@/lib/utils";
 import {

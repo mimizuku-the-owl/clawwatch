@@ -9,6 +9,7 @@ dist/
 .env*.local
 .env
 !.env.example
+.envrc.local
 
 # IDE
 .vscode/
@@ -19,10 +20,18 @@ dist/
 
 # Convex
 .convex/
-convex/_generated/
+**/convex/_generated/
 
 # TypeScript build info
 *.tsbuildinfo
 
+# Lock files
+bun.lock
+
 # Docker volumes
 infra/data/
+
+# Nix / direnv
+.direnv/
+result
+result-*

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { Activity, AlertTriangle, DollarSign, Zap } from "lucide-react";
 
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../../packages/core/convex/_generated/api";
 import { AgentStatusCard } from "@/components/AgentStatusCard";
 import { AlertBanner } from "@/components/AlertBanner";
 import { Card, StatCard } from "@/components/Card";

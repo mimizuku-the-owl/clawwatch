@@ -4,6 +4,9 @@ FROM oven/bun:1 AS builder
 WORKDIR /app
 
 COPY package.json bun.lock* ./
+COPY apps/clawwatch/package.json apps/clawwatch/
+COPY packages/core/package.json packages/core/
+COPY tooling/typescript/package.json tooling/typescript/
 RUN bun install --frozen-lockfile
 
 COPY . .
@@ -22,12 +25,12 @@ RUN addgroup --system --gid 1001 clawwatch && \
     adduser --system --uid 1001 --ingroup clawwatch clawwatch
 
 # Copy built frontend
-COPY --from=builder --chown=clawwatch:clawwatch /app/dist ./dist
+COPY --from=builder --chown=clawwatch:clawwatch /app/apps/clawwatch/dist ./dist
 
 # Copy server and collector source
-COPY --chown=clawwatch:clawwatch server.ts ./
-COPY --chown=clawwatch:clawwatch collector/ ./collector/
-COPY --chown=clawwatch:clawwatch convex/ ./convex/
+COPY --chown=clawwatch:clawwatch packages/core/server.ts ./
+COPY --chown=clawwatch:clawwatch packages/core/collector/ ./collector/
+COPY --chown=clawwatch:clawwatch packages/core/convex/ ./convex/
 COPY --chown=clawwatch:clawwatch package.json bun.lock* ./
 
 RUN bun install --frozen-lockfile --production

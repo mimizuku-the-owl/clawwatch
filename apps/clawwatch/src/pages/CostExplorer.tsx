@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../../packages/core/convex/_generated/api";
 import { Card, StatCard } from "@/components/Card";
 import { CostChart } from "@/components/CostChart";
 import { DollarSign, TrendingUp, Zap, Clock } from "lucide-react";

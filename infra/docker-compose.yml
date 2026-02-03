@@ -41,8 +41,8 @@ services:
 
   clawwatch-webapp:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infra/Dockerfile
     ports:
       - "5173:5173"
     environment:
@@ -55,8 +55,8 @@ services:
 
   clawwatch-collector:
     build:
-      context: .
-      dockerfile: Dockerfile.collector
+      context: ..
+      dockerfile: infra/Dockerfile.collector
     environment:
       - GATEWAY_URL=${GATEWAY_URL}
       - GATEWAY_TOKEN=${GATEWAY_TOKEN}

@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import type { Id } from "../../convex/_generated/dataModel";
+import { api } from "../../../../packages/core/convex/_generated/api";
+import type { Id } from "../../../../packages/core/convex/_generated/dataModel";
 import { Card } from "./Card";
 import {
   cn,
