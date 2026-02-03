@@ -86,7 +86,7 @@ function AgentsPage() {
         </div>
 
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               Add Agent

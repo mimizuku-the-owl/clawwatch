@@ -60,7 +60,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="sm">
+            <SidebarMenuButton size="sm">
               <Link to="/settings">
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
