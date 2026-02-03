@@ -7,9 +7,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/0xdsqr/clawwatch/blob/main/LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
-  <a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white" /></a>
-  <a href="https://convex.dev/"><img alt="Convex" src="https://img.shields.io/badge/Convex-FF6B4D?style=flat-square" /></a>
+  <a href="https://github.com/0xdsqr/clawwatch"><img src="https://img.shields.io/badge/github-clawwatch-blue?style=for-the-badge&logo=github" alt="GitHub" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://convex.dev/"><img src="https://img.shields.io/badge/convex-backend-FF6B4D?style=for-the-badge&logo=convex" alt="Convex" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/recharts-charts-22C55E?style=for-the-badge" alt="Recharts" /></a>
+  <a href="#"><img src="https://img.shields.io/badge/tanstack-start-EF4444?style=for-the-badge" alt="TanStack Start" /></a>
 </p>
 
 <p align="center">
