@@ -14,6 +14,7 @@ import {
   Bot,
   LayoutDashboard,
   Radar,
+  Radio,
   Settings,
 } from "lucide-react";
 import { NavFooter } from "@/components/nav-footer";
@@ -29,6 +30,7 @@ const mainItems: NavItem[] = [
   { title: "Overview", url: "/", icon: LayoutDashboard },
   { title: "Agents", url: "/agents", icon: Bot },
   { title: "Monitoring", url: "/monitoring", icon: Activity },
+  { title: "Events", url: "/events", icon: Radio },
   { title: "Alerting", url: "/alerting", icon: Bell },
 ];
 

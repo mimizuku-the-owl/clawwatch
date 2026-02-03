@@ -67,3 +67,42 @@ export const recent = query({
     }));
   },
 });
+
+// Comprehensive events query with filters
+export const events = query({
+  args: {
+    limit: v.optional(v.number()),
+    agentId: v.optional(v.id("agents")),
+    type: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    let q = ctx.db.query("activities").order("desc");
+
+    if (args.agentId) {
+      q = ctx.db
+        .query("activities")
+        .withIndex("by_agent", (q2) => q2.eq("agentId", args.agentId!))
+        .order("desc");
+    }
+
+    const activities = await q.take(args.limit ?? 500);
+
+    // Enrich with agent names
+    const agentIds = [...new Set(activities.map((a) => a.agentId))];
+    const agents = await Promise.all(agentIds.map((id) => ctx.db.get(id)));
+    const agentMap = new Map(
+      agents.filter(Boolean).map((a) => [a!._id, a!.name]),
+    );
+
+    let results = activities.map((activity) => ({
+      ...activity,
+      agentName: agentMap.get(activity.agentId) ?? "Unknown",
+    }));
+
+    if (args.type) {
+      results = results.filter((r) => r.type === args.type);
+    }
+
+    return results;
+  },
+});

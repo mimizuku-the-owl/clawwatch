@@ -17,6 +17,7 @@ import { Input } from "@clawwatch/ui/components/input";
 import { Label } from "@clawwatch/ui/components/label";
 import { cn } from "@clawwatch/ui/lib/utils";
 import { api } from "@convex/api";
+import type { Id } from "@convex/dataModel";
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
 import { useQuery, useMutation } from "convex/react";
 import {
@@ -25,11 +26,14 @@ import {
   Circle,
   Clock,
   DollarSign,
+  LayoutGrid,
+  Network,
   Plus,
   Search,
 } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { memo, useMemo, useState } from "react";
+import { AgentGraph } from "@/components/agent-graph";
 import { formatCost, statusColor, timeAgo } from "@/lib/utils";
 
 export const Route = createFileRoute("/agents")({
@@ -45,6 +49,7 @@ function AgentsPage() {
   const [gatewayUrl, setGatewayUrl] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "graph">("grid");
 
   const isOnChildRoute = matches.some(match => match.routeId === '/agents/$agentId');
 
@@ -166,7 +171,7 @@ function AgentsPage() {
         </Dialog>
       </div>
 
-      {/* Search and filter bar */}
+      {/* Search, filter bar, and view toggle */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -196,42 +201,143 @@ function AgentsPage() {
             </button>
           ))}
         </div>
+
+        {/* View toggle */}
+        <div className="flex items-center gap-1 rounded-lg border bg-muted/30 p-1 ml-auto">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={cn(
+              "rounded-md p-1.5 transition-colors",
+              viewMode === "grid"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+            title="Grid View"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode("graph")}
+            className={cn(
+              "rounded-md p-1.5 transition-colors",
+              viewMode === "graph"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+            title="Graph View"
+          >
+            <Network className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
+      {/* Graph View */}
+      {viewMode === "graph" && (
+        <AgentGraphView agents={filteredAgents} />
+      )}
+
       {/* Agent grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredAgents.map((agent) => (
-          <AgentCard key={agent._id} agent={agent} />
-        ))}
-        {filteredAgents.length === 0 && agents.length > 0 && (
-          <Card className="col-span-full">
-            <CardContent className="py-8 text-center">
-              <Search className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">No agents match your filters</p>
-            </CardContent>
-          </Card>
-        )}
-        {agents.length === 0 && (
-          <Card className="col-span-full">
-            <CardContent className="py-12 text-center">
-              <div className="mx-auto mb-4 h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                <Bot className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold">No agents connected</h3>
-              <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                Connect your Clawdbot gateway to start monitoring agent activity,
-                costs, and performance metrics.
-              </p>
-              <Button className="mt-4" onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Agent
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {viewMode === "grid" && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredAgents.map((agent) => (
+            <AgentCard key={agent._id} agent={agent} />
+          ))}
+          {filteredAgents.length === 0 && agents.length > 0 && (
+            <Card className="col-span-full">
+              <CardContent className="py-8 text-center">
+                <Search className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No agents match your filters</p>
+              </CardContent>
+            </Card>
+          )}
+          {agents.length === 0 && (
+            <Card className="col-span-full">
+              <CardContent className="py-12 text-center">
+                <div className="mx-auto mb-4 h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                  <Bot className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold">No agents connected</h3>
+                <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                  Connect your Clawdbot gateway to start monitoring agent activity,
+                  costs, and performance metrics.
+                </p>
+                <Button className="mt-4" onClick={() => setIsAddDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Agent
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
+}
+
+// ── Graph View Wrapper ──
+// Uses a fixed set of up to 10 hook slots to avoid hooks-in-loop violations
+
+const MAX_GRAPH_AGENTS = 10;
+
+function AgentGraphView({ agents }: { agents: AgentData[] }) {
+  const sliced = agents.slice(0, MAX_GRAPH_AGENTS);
+
+  // Fixed hook slots (hooks must be called unconditionally)
+  const h0 = useQuery(api.agents.healthSummary, sliced[0] ? { agentId: sliced[0]._id as Id<"agents"> } : "skip");
+  const h1 = useQuery(api.agents.healthSummary, sliced[1] ? { agentId: sliced[1]._id as Id<"agents"> } : "skip");
+  const h2 = useQuery(api.agents.healthSummary, sliced[2] ? { agentId: sliced[2]._id as Id<"agents"> } : "skip");
+  const h3 = useQuery(api.agents.healthSummary, sliced[3] ? { agentId: sliced[3]._id as Id<"agents"> } : "skip");
+  const h4 = useQuery(api.agents.healthSummary, sliced[4] ? { agentId: sliced[4]._id as Id<"agents"> } : "skip");
+  const h5 = useQuery(api.agents.healthSummary, sliced[5] ? { agentId: sliced[5]._id as Id<"agents"> } : "skip");
+  const h6 = useQuery(api.agents.healthSummary, sliced[6] ? { agentId: sliced[6]._id as Id<"agents"> } : "skip");
+  const h7 = useQuery(api.agents.healthSummary, sliced[7] ? { agentId: sliced[7]._id as Id<"agents"> } : "skip");
+  const h8 = useQuery(api.agents.healthSummary, sliced[8] ? { agentId: sliced[8]._id as Id<"agents"> } : "skip");
+  const h9 = useQuery(api.agents.healthSummary, sliced[9] ? { agentId: sliced[9]._id as Id<"agents"> } : "skip");
+
+  const c0 = useQuery(api.costs.summary, sliced[0] ? { agentId: sliced[0]._id as Id<"agents"> } : "skip");
+  const c1 = useQuery(api.costs.summary, sliced[1] ? { agentId: sliced[1]._id as Id<"agents"> } : "skip");
+  const c2 = useQuery(api.costs.summary, sliced[2] ? { agentId: sliced[2]._id as Id<"agents"> } : "skip");
+  const c3 = useQuery(api.costs.summary, sliced[3] ? { agentId: sliced[3]._id as Id<"agents"> } : "skip");
+  const c4 = useQuery(api.costs.summary, sliced[4] ? { agentId: sliced[4]._id as Id<"agents"> } : "skip");
+  const c5 = useQuery(api.costs.summary, sliced[5] ? { agentId: sliced[5]._id as Id<"agents"> } : "skip");
+  const c6 = useQuery(api.costs.summary, sliced[6] ? { agentId: sliced[6]._id as Id<"agents"> } : "skip");
+  const c7 = useQuery(api.costs.summary, sliced[7] ? { agentId: sliced[7]._id as Id<"agents"> } : "skip");
+  const c8 = useQuery(api.costs.summary, sliced[8] ? { agentId: sliced[8]._id as Id<"agents"> } : "skip");
+  const c9 = useQuery(api.costs.summary, sliced[9] ? { agentId: sliced[9]._id as Id<"agents"> } : "skip");
+
+  const healthArr = [h0, h1, h2, h3, h4, h5, h6, h7, h8, h9];
+  const costArr = [c0, c1, c2, c3, c4, c5, c6, c7, c8, c9];
+
+  const healthMap = useMemo(() => {
+    const m = new Map<string, any>();
+    sliced.forEach((a, i) => {
+      if (healthArr[i]) m.set(a._id, healthArr[i]);
+    });
+    return m;
+  }, [sliced, ...healthArr]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const costMap = useMemo(() => {
+    const m = new Map<string, any>();
+    sliced.forEach((a, i) => {
+      if (costArr[i]) m.set(a._id, costArr[i]);
+    });
+    return m;
+  }, [sliced, ...costArr]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (agents.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-16 text-center">
+          <Network className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">
+            No agents to display in graph view
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return <AgentGraph agents={sliced} healthMap={healthMap} costMap={costMap} />;
 }
 
 interface AgentData {

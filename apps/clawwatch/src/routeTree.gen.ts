@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as MonitoringRouteImport } from './routes/monitoring'
 import { Route as MetricsRouteImport } from './routes/metrics'
+import { Route as EventsRouteImport } from './routes/events'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AlertingRouteImport } from './routes/alerting'
 import { Route as AgentsRouteImport } from './routes/agents'
@@ -32,6 +33,11 @@ const MonitoringRoute = MonitoringRouteImport.update({
 const MetricsRoute = MetricsRouteImport.update({
   id: '/metrics',
   path: '/metrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertsRoute = AlertsRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/agents': typeof AgentsRouteWithChildren
   '/alerting': typeof AlertingRoute
   '/alerts': typeof AlertsRoute
+  '/events': typeof EventsRoute
   '/metrics': typeof MetricsRoute
   '/monitoring': typeof MonitoringRoute
   '/settings': typeof SettingsRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/agents': typeof AgentsRouteWithChildren
   '/alerting': typeof AlertingRoute
   '/alerts': typeof AlertsRoute
+  '/events': typeof EventsRoute
   '/metrics': typeof MetricsRoute
   '/monitoring': typeof MonitoringRoute
   '/settings': typeof SettingsRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/agents': typeof AgentsRouteWithChildren
   '/alerting': typeof AlertingRoute
   '/alerts': typeof AlertsRoute
+  '/events': typeof EventsRoute
   '/metrics': typeof MetricsRoute
   '/monitoring': typeof MonitoringRoute
   '/settings': typeof SettingsRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerting'
     | '/alerts'
+    | '/events'
     | '/metrics'
     | '/monitoring'
     | '/settings'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerting'
     | '/alerts'
+    | '/events'
     | '/metrics'
     | '/monitoring'
     | '/settings'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/agents'
     | '/alerting'
     | '/alerts'
+    | '/events'
     | '/metrics'
     | '/monitoring'
     | '/settings'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   AgentsRoute: typeof AgentsRouteWithChildren
   AlertingRoute: typeof AlertingRoute
   AlertsRoute: typeof AlertsRoute
+  EventsRoute: typeof EventsRoute
   MetricsRoute: typeof MetricsRoute
   MonitoringRoute: typeof MonitoringRoute
   SettingsRoute: typeof SettingsRoute
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/metrics'
       fullPath: '/metrics'
       preLoaderRoute: typeof MetricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alerts': {
@@ -231,6 +251,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentsRoute: AgentsRouteWithChildren,
   AlertingRoute: AlertingRoute,
   AlertsRoute: AlertsRoute,
+  EventsRoute: EventsRoute,
   MetricsRoute: MetricsRoute,
   MonitoringRoute: MonitoringRoute,
   SettingsRoute: SettingsRoute,
