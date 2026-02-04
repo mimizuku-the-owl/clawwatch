@@ -1,5 +1,5 @@
-import type { GenericDatabaseWriter } from "convex/server";
 import { v } from "convex/values";
+import type { DatabaseWriter } from "./_generated/server";
 import { mutation } from "./_generated/server";
 
 // Ingest session data from the Clawdbot gateway
@@ -314,7 +314,7 @@ export const updateStatsCache = mutation({
 });
 
 async function applyStatsCacheUpdates(
-  ctx: { db: GenericDatabaseWriter<any> },
+  ctx: { db: DatabaseWriter },
   updates: Array<{
     key: string;
     cost: number;
@@ -324,9 +324,9 @@ async function applyStatsCacheUpdates(
   }>,
 ): Promise<void> {
   for (const update of updates) {
-    const existing = await (ctx.db as any)
+    const existing = await ctx.db
       .query("statsCache")
-      .withIndex("by_key", (q: any) => q.eq("key", update.key))
+      .withIndex("by_key", (q) => q.eq("key", update.key))
       .first();
 
     if (existing) {
