@@ -1,21 +1,10 @@
-function getBunRuntime(): {
-  file: (path: string) => { text: () => Promise<string> };
-  write: (path: string, content: string) => Promise<number> | number;
-} {
-  const bun = (globalThis as { Bun?: unknown }).Bun;
-  if (!bun) {
-    throw new Error("Bun runtime is required for server file operations.");
-  }
-  return bun as {
-    file: (path: string) => { text: () => Promise<string> };
-    write: (path: string, content: string) => Promise<number> | number;
-  };
-}
+import { readFile, writeFile } from "node:fs/promises";
 
 export async function readText(path: string): Promise<string> {
-  return await getBunRuntime().file(path).text();
+  return await readFile(path, "utf-8");
 }
 
 export async function writeText(path: string, content: string): Promise<number> {
-  return await getBunRuntime().write(path, content);
+  await writeFile(path, content, "utf-8");
+  return Buffer.byteLength(content, "utf-8");
 }
