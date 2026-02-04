@@ -9,7 +9,7 @@ const AgentXrayInternal = lazy(() =>
 );
 
 const xrayFallback = (
-  <div className="flex h-[600px] items-center justify-center rounded-lg border bg-card text-muted-foreground">
+  <div className="flex h-[650px] items-center justify-center rounded-lg border bg-card text-muted-foreground">
     <div className="text-center">
       <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
       <p className="text-sm">Loading x-ray...</p>

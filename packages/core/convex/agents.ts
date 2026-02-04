@@ -255,12 +255,86 @@ function extractToolName(summary: string): string | null {
   return name ? name : null;
 }
 
+// Core tools that get grouped rather than shown individually
+const CORE_TOOLS = new Set(["exec", "read", "write", "edit", "process"]);
+
+type IntegrationCategory = "service" | "channel" | "memory" | "internal" | "ai";
+
+interface IntegrationDef {
+  name: string;
+  category: IntegrationCategory;
+  icon: string;
+}
+
+// Pattern-match tool calls to meaningful integrations
+function classifyToolCall(
+  toolName: string,
+  summary: string,
+): IntegrationDef | "core" | null {
+  // exec-based integrations: check summary for CLI patterns
+  if (toolName === "exec") {
+    if (/\bgh\s/.test(summary))
+      return { name: "GitHub", category: "service", icon: "🐙" };
+    if (/\bbird\s/.test(summary))
+      return { name: "Twitter/X", category: "service", icon: "🐦" };
+    // Remaining exec → core tool
+    return "core";
+  }
+
+  // Direct tool → integration mapping
+  const directMap: Record<string, IntegrationDef> = {
+    tts: { name: "ElevenLabs", category: "service", icon: "🔊" },
+    web_search: { name: "Brave Search", category: "service", icon: "🔍" },
+    web_fetch: { name: "Web Fetch", category: "service", icon: "🌐" },
+    browser: { name: "Browser", category: "service", icon: "🖥️" },
+    memory_search: { name: "Memory", category: "memory", icon: "🧠" },
+    memory_get: { name: "Memory", category: "memory", icon: "🧠" },
+    sessions_spawn: { name: "Sub-Agents", category: "internal", icon: "🤖" },
+    sessions_send: { name: "Sub-Agents", category: "internal", icon: "🤖" },
+    cron: { name: "Cron/Scheduler", category: "internal", icon: "⏰" },
+    message: { name: "Messaging", category: "channel", icon: "💬" },
+    image: { name: "Vision", category: "service", icon: "👁️" },
+    nodes: { name: "Nodes/Devices", category: "service", icon: "📱" },
+    canvas: { name: "Canvas", category: "service", icon: "🎨" },
+  };
+
+  if (directMap[toolName]) return directMap[toolName];
+
+  // Core tools (read, write, edit, process)
+  if (CORE_TOOLS.has(toolName)) return "core";
+
+  // Unknown tools — skip (don't pollute the graph)
+  return null;
+}
+
+// Map provider strings to display names
+function normalizeProvider(provider: string): {
+  name: string;
+  icon: string;
+} {
+  const lower = provider.toLowerCase();
+  if (lower.includes("anthropic") || lower.includes("claude"))
+    return { name: "Anthropic", icon: "🟣" };
+  if (lower.includes("openai") || lower.includes("gpt"))
+    return { name: "OpenAI", icon: "🟢" };
+  if (
+    lower.includes("google") ||
+    lower.includes("gemini") ||
+    lower.includes("vertex")
+  )
+    return { name: "Google", icon: "🔵" };
+  if (lower.includes("meta") || lower.includes("llama"))
+    return { name: "Meta", icon: "🔷" };
+  return { name: provider, icon: "🤖" };
+}
+
 export const xraySummary = query({
   args: { agentId: v.id("agents") },
   handler: async (ctx, args) => {
     const agent = await ctx.db.get(args.agentId);
     if (!agent) return null;
 
+    // --- Channels from sessions ---
     const sessions = await ctx.db
       .query("sessions")
       .withIndex("by_agent", (q) => q.eq("agentId", args.agentId))
@@ -276,32 +350,134 @@ export const xraySummary = query({
       }
     }
 
+    // --- Activities → integrations + core tools ---
     const activities = await ctx.db
       .query("activities")
       .withIndex("by_agent", (q) => q.eq("agentId", args.agentId))
       .order("desc")
-      .take(300);
+      .take(500);
 
-    const toolMap = new Map<string, { count: number; lastSeen: number }>();
+    const integrationMap = new Map<
+      string,
+      { category: IntegrationCategory; icon: string; count: number; lastSeen: number }
+    >();
+    const coreToolCounts = { exec: 0, read: 0, write: 0, edit: 0, process: 0 };
+    const subAgentMap = new Map<string, { count: number; lastSeen: number }>();
+
     for (const activity of activities) {
       if (activity.type !== "tool_call") continue;
       const toolName = extractToolName(activity.summary);
       if (!toolName) continue;
       const activityTime = activity.timestamp ?? activity._creationTime;
-      const current = toolMap.get(toolName) ?? { count: 0, lastSeen: 0 };
-      current.count += 1;
-      current.lastSeen = Math.max(current.lastSeen, activityTime);
-      toolMap.set(toolName, current);
+
+      const classification = classifyToolCall(toolName, activity.summary);
+
+      if (classification === "core") {
+        // Count core tools
+        if (toolName in coreToolCounts) {
+          coreToolCounts[toolName as keyof typeof coreToolCounts] += 1;
+        }
+        continue;
+      }
+
+      if (classification === null) continue;
+
+      // Track sub-agent spawns by name
+      if (
+        classification.name === "Sub-Agents" &&
+        toolName === "sessions_spawn"
+      ) {
+        const nameMatch = activity.summary.match(
+          /sessions_spawn:\s*(?:spawned|started)?\s*(\S+)/i,
+        );
+        if (nameMatch?.[1]) {
+          const subName = nameMatch[1];
+          const existing = subAgentMap.get(subName) ?? {
+            count: 0,
+            lastSeen: 0,
+          };
+          existing.count += 1;
+          existing.lastSeen = Math.max(existing.lastSeen, activityTime);
+          subAgentMap.set(subName, existing);
+        }
+      }
+
+      // Accumulate integration stats
+      const existing = integrationMap.get(classification.name) ?? {
+        category: classification.category,
+        icon: classification.icon,
+        count: 0,
+        lastSeen: 0,
+      };
+      existing.count += 1;
+      existing.lastSeen = Math.max(existing.lastSeen, activityTime);
+      integrationMap.set(classification.name, existing);
     }
 
-    const tools = Array.from(toolMap.entries())
+    const integrations = Array.from(integrationMap.entries())
       .map(([name, data]) => ({
         name,
-        count: data.count,
+        category: data.category,
+        icon: data.icon,
+        callCount: data.count,
         lastSeen: data.lastSeen,
       }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 20);
+      .sort((a, b) => b.callCount - a.callCount);
+
+    const subAgents = Array.from(subAgentMap.entries())
+      .map(([name, data]) => ({ name, count: data.count, lastSeen: data.lastSeen }))
+      .sort((a, b) => b.count - a.count);
+
+    // --- AI providers from cost records ---
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const costRecords = await ctx.db
+      .query("costRecords")
+      .withIndex("by_agent_time", (q) =>
+        q.eq("agentId", args.agentId).gte("timestamp", weekAgo),
+      )
+      .take(1000);
+
+    const providerMap = new Map<
+      string,
+      {
+        icon: string;
+        cost: number;
+        inputTokens: number;
+        outputTokens: number;
+        requests: number;
+        lastSeen: number;
+      }
+    >();
+
+    for (const record of costRecords) {
+      const { name, icon } = normalizeProvider(record.provider);
+      const existing = providerMap.get(name) ?? {
+        icon,
+        cost: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        requests: 0,
+        lastSeen: 0,
+      };
+      existing.cost += record.cost;
+      existing.inputTokens += record.inputTokens;
+      existing.outputTokens += record.outputTokens;
+      existing.requests += 1;
+      existing.lastSeen = Math.max(existing.lastSeen, record.timestamp);
+      providerMap.set(name, existing);
+    }
+
+    const aiProviders = Array.from(providerMap.entries())
+      .map(([name, data]) => ({
+        name,
+        icon: data.icon,
+        cost: Math.round(data.cost * 10000) / 10000,
+        inputTokens: data.inputTokens,
+        outputTokens: data.outputTokens,
+        requests: data.requests,
+        lastSeen: data.lastSeen,
+      }))
+      .sort((a, b) => b.cost - a.cost);
 
     return {
       agent: {
@@ -312,7 +488,10 @@ export const xraySummary = query({
         config: agent.config,
       },
       channels: Array.from(channels).sort((a, b) => a.localeCompare(b)),
-      tools,
+      integrations,
+      coreToolCounts,
+      subAgents,
+      aiProviders,
     };
   },
 });
