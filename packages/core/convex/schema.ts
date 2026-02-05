@@ -37,6 +37,9 @@ export default defineSchema({
     isActive: v.boolean(),
   })
     .index("by_agent", ["agentId"])
+    .index("by_agent_key", ["agentId", "sessionKey"])
+    .index("by_agent_active", ["agentId", "isActive", "lastActivity"])
+    .index("by_agent_channel_active", ["agentId", "channel", "isActive", "lastActivity"])
     .index("by_active", ["isActive", "lastActivity"]),
 
   // Cost records — granular token/dollar tracking
