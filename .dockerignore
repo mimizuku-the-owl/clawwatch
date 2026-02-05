@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.output/
+.git/
+.env.local
+.env*.local
+.env
+.envrc.local
+.convex/
+.direnv/
+.vscode/
+.idea/
+*.tsbuildinfo
+infra/data/
+result
+result-*
+.DS_Store
